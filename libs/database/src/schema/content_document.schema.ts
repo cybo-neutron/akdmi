@@ -12,7 +12,7 @@ const ContentDocumentTypeEnum = {
   OTHER: 'other',
 } as const;
 
-const ContentDocumentType = pgEnum(
+export const ContentDocumentType = pgEnum(
   'content_document_type',
   Object.values(ContentDocumentTypeEnum) as [string, ...string[]]
 );

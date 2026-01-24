@@ -11,7 +11,7 @@ const ContentMediaTypeEnum = {
   IMAGE: 'image',
 } as const;
 
-const ContentMediaType = pgEnum(
+export const ContentMediaType = pgEnum(
   'content_media_type',
   Object.values(ContentMediaTypeEnum) as [string, ...string[]]
 );

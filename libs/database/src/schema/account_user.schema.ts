@@ -13,7 +13,7 @@ export const UserRoleEnum = {
     MANAGER: "manager",
 } as const
 
-const UserRole = pgEnum("role", Object.values(UserRoleEnum) as [string, ...string[]]);
+export const UserRole = pgEnum("role", Object.values(UserRoleEnum) as [string, ...string[]]);
 
 export const AccountUser = pgTable('account_user', {
     id: bigserial('id', { mode: 'number' }).primaryKey(),
