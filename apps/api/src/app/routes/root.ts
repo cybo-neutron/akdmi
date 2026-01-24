@@ -9,7 +9,7 @@ export default async function (fastify: FastifyInstance) {
   })
 
   fastify.register(authRoutes, {
-    prefix: "auth"
+    prefix: "/v1/auth"
   })
 
 

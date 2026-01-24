@@ -12,6 +12,18 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./repo": {
+      "@org/source": "./src/repo/index.ts",
+      "types": "./dist/repo/index.d.ts",
+      "import": "./dist/repo/index.js",
+      "default": "./dist/repo/index.js"
+    },
+    "./schema": {
+      "@org/source": "./src/schema/index.ts",
+      "types": "./dist/schema/index.d.ts",
+      "import": "./dist/schema/index.js",
+      "default": "./dist/schema/index.js"
     }
   },
   "dependencies": {

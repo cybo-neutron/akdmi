@@ -1,10 +1,10 @@
-import { db } from '@database/db';
-import { AccountUser } from '@database/schema/account_user.schema';
+import { db } from '../db';
+import { AccountUser } from '../schema/account_user.schema';
 import {
     User,
     UserInsertSchema,
     UserSchema,
-} from '@database/schema/user.schema';
+} from '../schema/user.schema';
 import { and, asc, desc, eq, gt, gte, lt, lte, or } from 'drizzle-orm';
 
 export async function createUser(
@@ -24,8 +24,13 @@ export async function createUser(
     return user;
 }
 
-export async function getUserById({ id }: { id: string }): Promise<UserSchema> {
+export async function getUserById({ id }: { id: number }): Promise<UserSchema> {
     const user = await db.select().from(User).where(eq(User.id, id));
+    return user;
+}
+
+export async function getUserByEmail({ email }: { email: string }): Promise<UserSchema> {
+    const user = await db.select().from(User).where(eq(User.email, email));
     return user;
 }
 
@@ -38,10 +43,10 @@ export async function getUsersForAccount({
         firstName: 'asc'
     }
 }: {
-    accountId: string;
+    accountId: number;
     cursor?: {
         firstName?: string;
-        id: string
+        id: number
     };
     pageSize?: number;
     page?: number;

@@ -47,3 +47,4 @@ Thumbs.db
 
 # sensitive files
 .env
+vite.config.*.timestamp*

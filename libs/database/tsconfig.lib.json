@@ -6,11 +6,7 @@
     "outDir": "dist",
     "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
     "emitDeclarationOnly": false,
-    "types": ["node"],
-    "paths": {
-      "@database/*": ["./src/*"]
-    }
-
+    "types": ["node"]
   },
   "include": ["src/**/*.ts"],
   "references": [
@@ -18,5 +14,4 @@
       "path": "../utils/tsconfig.lib.json"
     }
   ]
-  
 }
