@@ -1,9 +1,8 @@
-import { pgTable, pgEnum, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, pgEnum, varchar, bigserial } from 'drizzle-orm/pg-core';
 import { timestamps } from '../lib/timestamps';
-import { createInsertSchema } from 'drizzle-zod';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { Content } from './content.schema';
-import { bigserial } from 'drizzle-orm/pg-core';
 
 const ContentDocumentTypeEnum = {
   PDF: 'pdf',
@@ -27,6 +26,10 @@ export const ContentDocument = pgTable('content_document', {
   ...timestamps,
 });
 
-export const ContentDocumentSelectSchema = createInsertSchema(ContentDocument);
+export const ContentDocumentSchema = createSelectSchema(ContentDocument);
+export const ContentDocumentInsertSchema = createInsertSchema(ContentDocument);
 
-export type ContentDocumentSchema = z.infer<typeof ContentDocumentSelectSchema>;
+export type ContentDocumentSelectType = z.infer<typeof ContentDocumentSchema>;
+export type ContentDocumentInsertType = z.infer<
+  typeof ContentDocumentInsertSchema
+>;

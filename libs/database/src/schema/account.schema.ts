@@ -1,8 +1,7 @@
-import { boolean, pgTable, varchar } from 'drizzle-orm/pg-core';
+import { boolean, pgTable, varchar, bigserial } from 'drizzle-orm/pg-core';
 import { timestamps } from '../lib/timestamps';
-import { createInsertSchema } from 'drizzle-zod';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
-import { bigserial } from 'drizzle-orm/pg-core';
 
 export const Account = pgTable('account', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
@@ -11,8 +10,8 @@ export const Account = pgTable('account', {
   ...timestamps,
 });
 
-export const AccountSelectSchema = createInsertSchema(Account).omit({
-  id: true,
-});
+export const AccountSchema = createSelectSchema(Account);
+export const AccountInsertSchema = createInsertSchema(Account);
 
-export type AccountSchema = z.infer<typeof AccountSelectSchema>;
+export type AccountSelectType = z.infer<typeof AccountSchema>;
+export type AccountInsertType = z.infer<typeof AccountInsertSchema>;

@@ -1,10 +1,14 @@
-import { boolean, pgEnum, bigserial } from 'drizzle-orm/pg-core';
-import { pgTable } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  pgEnum,
+  bigserial,
+  pgTable,
+  varchar,
+  text,
+} from 'drizzle-orm/pg-core';
 import { timestamps } from '../lib/timestamps';
-import { createInsertSchema } from 'drizzle-zod';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
-import { varchar } from 'drizzle-orm/pg-core';
-import { text } from 'drizzle-orm/pg-core';
 import { User } from './user.schema';
 
 export const ContentTypeEnum = {
@@ -33,6 +37,8 @@ export const Content = pgTable('content', {
   ...timestamps,
 });
 
-export const ContentSelectSchema = createInsertSchema(Content);
+export const ContentSchema = createSelectSchema(Content);
+export const ContentInsertSchema = createInsertSchema(Content);
 
-export type ContentSchema = z.infer<typeof ContentSelectSchema>;
+export type ContentSelectType = z.infer<typeof ContentSchema>;
+export type ContentInsertType = z.infer<typeof ContentInsertSchema>;

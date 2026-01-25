@@ -1,8 +1,7 @@
-import { pgTable, pgEnum, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, pgEnum, varchar, bigserial } from 'drizzle-orm/pg-core';
 import { timestamps } from '../lib/timestamps';
-import { createInsertSchema } from 'drizzle-zod';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
-import { bigserial } from 'drizzle-orm/pg-core';
 import { Content } from './content.schema';
 
 const ContentMediaTypeEnum = {
@@ -26,6 +25,8 @@ export const ContentMedia = pgTable('content_media', {
   ...timestamps,
 });
 
-export const ContentMediaSelectSchema = createInsertSchema(ContentMedia);
+export const ContentMediaSchema = createSelectSchema(ContentMedia);
+export const ContentMediaInsertSchema = createInsertSchema(ContentMedia);
 
-export type ContentMediaSchema = z.infer<typeof ContentMediaSelectSchema>;
+export type ContentMediaSelectType = z.infer<typeof ContentMediaSchema>;
+export type ContentMediaInsertType = z.infer<typeof ContentMediaInsertSchema>;

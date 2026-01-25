@@ -1,9 +1,8 @@
-import { boolean, pgTable, text } from 'drizzle-orm/pg-core';
+import { boolean, pgTable, text, bigserial } from 'drizzle-orm/pg-core';
 import { timestamps } from '../lib/timestamps';
-import { createInsertSchema } from 'drizzle-zod';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { Content } from './content.schema';
-import { bigserial } from 'drizzle-orm/pg-core';
 
 export const ContentText = pgTable('content_text', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
@@ -15,6 +14,8 @@ export const ContentText = pgTable('content_text', {
   ...timestamps,
 });
 
-export const ContentTextSelectSchema = createInsertSchema(ContentText);
+export const ContentTextSchema = createSelectSchema(ContentText);
+export const ContentTextInsertSchema = createInsertSchema(ContentText);
 
-export type ContentTextSchema = z.infer<typeof ContentTextSelectSchema>;
+export type ContentTextSelectType = z.infer<typeof ContentTextSchema>;
+export type ContentTextInsertType = z.infer<typeof ContentTextInsertSchema>;

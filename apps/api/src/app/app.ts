@@ -1,6 +1,8 @@
 import * as path from 'path';
 import { FastifyInstance } from 'fastify';
 import AutoLoad from '@fastify/autoload';
+import cors from '@fastify/cors';
+// import { logger } from '@org/utils';
 
 /* eslint-disable-next-line */
 export interface AppOptions {}
@@ -23,5 +25,12 @@ export async function app(fastify: FastifyInstance, opts: AppOptions) {
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'routes'),
     options: { ...opts },
+  });
+
+  // Register cors
+  fastify.register(cors, {
+    // origin: [process.env.FRONTEND_URL as string],
+    origin: 'http://localhost:5173',
+    credentials: true,
   });
 }

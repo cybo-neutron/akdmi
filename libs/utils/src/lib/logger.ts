@@ -1,9 +1,6 @@
-import * as winston from "winston";
+import * as winston from 'winston';
 
-
-
-const { combine, timestamp, printf, colorize, align, errors } =
-  winston.format;
+const { combine, timestamp, printf, colorize, errors } = winston.format;
 
 export const logger = winston.createLogger({
   level: 'http',
@@ -13,9 +10,8 @@ export const logger = winston.createLogger({
     timestamp({
       format: 'YYYY-MM-DD HH:mm:ss',
     }),
-    align(),
     printf(
-      (info : any) =>
+      (info: any) =>
         `${info.timestamp} ${info.level}: ${info.message} ${
           info.stack ? `\n${info.stack}` : ''
         }`
