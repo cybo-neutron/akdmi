@@ -4,13 +4,6 @@ Role(enum)
     - STUDENT
     - MANAGER
 
-Account
-    - id : string
-    - name : string
-    - users : User[]
-    - createdAt : Date
-    - updatedAt : Date
-    - isActive : boolean
 
 User
     - id : string
@@ -21,14 +14,7 @@ User
     - createdAt : Date
     - updatedAt : Date
     - isActive : boolean
-
-AccountUser
-    - accountId : string
-    - userId : string
     - role : Role
-    - isActive : boolean
-    - createdAt : Date
-    - updatedAt : Date
 
 
 ContentType (enum)
@@ -103,15 +89,11 @@ PermissionEnum
     - update
     - delete
 
-AccountRoleResourcePermission
-    - account : Account
-    - resource : ResourceEnum
+
+RoleResourcePermission
     - role : Role
+    - resource : ResourceEnum
     - permission : PermissionEnum[]
 
-UserAccountResourcePermission
-    - user : User
-    - account : Account
-    - resource : ResourceEnum
-    - permission : PermissionEnum[]
+
 

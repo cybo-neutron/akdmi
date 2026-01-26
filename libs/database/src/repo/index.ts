@@ -4,5 +4,4 @@ export * from './content.repo.js';
 export * from './content_text.repo.js';
 export * from './content_media.repo.js';
 export * from './content_document.repo.js';
-export * from './account.repo.js';
-export * from './account_user.repo.js';
+export * from './role_resource_permission.repo.js';

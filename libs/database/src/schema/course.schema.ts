@@ -15,9 +15,6 @@ export const Course = pgTable('course', {
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description').notNull(),
   isActive: boolean('is_active').default(true).notNull(),
-  // accountId: bigserial('account_id', { mode: 'number' })
-  //   .notNull()
-  //   .references(() => Account.id),
   createdBy: bigserial('created_by', { mode: 'number' })
     .notNull()
     .references(() => User.id),

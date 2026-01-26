@@ -48,15 +48,6 @@ export async function getCoursesByUser(
     .where(and(eq(Course.createdBy, userId), eq(Course.isActive, true)));
 }
 
-// export async function getCoursesByAccount(
-//   accountId: number
-// ): Promise<CourseSelectType[]> {
-//   return db
-//     .select()
-//     .from(Course)
-//     .where(and(eq(Course.accountId, accountId), eq(Course.isActive, true)));
-// }
-
 export async function deleteCourse(id: number): Promise<void> {
   await db
     .update(Course)

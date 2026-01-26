@@ -1,9 +1,20 @@
 import { timestamps } from '../lib/timestamps';
 import { boolean } from 'drizzle-orm/pg-core';
-import { pgTable, varchar, text } from 'drizzle-orm/pg-core';
+import { pgTable, varchar, text, bigserial, pgEnum } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
-import { bigserial } from 'drizzle-orm/pg-core';
+
+export const UserRoleEnum = {
+  ADMIN: 'admin',
+  MENTOR: 'mentor',
+  STUDENT: 'student',
+  MANAGER: 'manager',
+} as const;
+
+export const UserRole = pgEnum(
+  'role',
+  Object.values(UserRoleEnum) as [string, ...string[]]
+);
 
 export const User = pgTable('user', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
@@ -13,6 +24,7 @@ export const User = pgTable('user', {
   password: text('password').notNull(),
   avatarUrl: text('avatar_url'),
   isActive: boolean('is_active').default(true).notNull(),
+  role: UserRole('role').default(UserRoleEnum.STUDENT).notNull(),
   ...timestamps,
 });
 
