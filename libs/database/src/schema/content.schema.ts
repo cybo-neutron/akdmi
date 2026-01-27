@@ -10,6 +10,7 @@ import { timestamps } from '../lib/timestamps';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { User } from './user.schema';
+import { integer } from 'drizzle-orm/pg-core';
 
 export const ContentTypeEnum = {
   TEXT: 'text',
@@ -28,6 +29,7 @@ export const Content = pgTable('content', {
   description: text('description').notNull(),
   type: ContentType('type').notNull(),
   isActive: boolean('is_active').default(true).notNull(),
+  sequence: integer('sequence').default(1).notNull(),
   createdBy: bigserial('created_by', { mode: 'number' })
     .notNull()
     .references(() => User.id),

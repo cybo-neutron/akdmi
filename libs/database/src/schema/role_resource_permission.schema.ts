@@ -2,6 +2,7 @@ import { bigserial, pgEnum, pgTable } from 'drizzle-orm/pg-core';
 import { timestamps } from '../lib/timestamps';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import z from 'zod';
+import { UserRole } from './user.schema';
 
 const PermissionEnumType = {
   CREATE: 'create',
@@ -28,6 +29,7 @@ export const ResourceEnum = pgEnum(
 
 export const RoleResourcePermission = pgTable('role_resource_permission', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
+  role: UserRole('role').notNull(),
   resource: ResourceEnum('resource').notNull(),
   permission: PermissionEnum('permission').notNull(),
   ...timestamps,

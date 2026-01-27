@@ -8,6 +8,20 @@
       "when": 1769269546425,
       "tag": "0000_common_nuke",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1769444715897,
+      "tag": "0001_spooky_lionheart",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769444869099,
+      "tag": "0002_jazzy_boomerang",
+      "breakpoints": true
     }
   ]
 }

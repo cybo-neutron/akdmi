@@ -2,8 +2,15 @@ import { createUser, getUserByEmail } from '@org/database/repo';
 import bcrypt from 'bcrypt';
 import z from 'zod';
 import jwt from 'jsonwebtoken';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { logger } from '@org/utils';
 
-export async function registerNewUser(newUserData: any) {
+export async function registerNewUser(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  const newUserData = request.body;
+
   const validateUser = z.object({
     firstName: z.string().max(255).optional(),
     lastName: z.string().max(255).optional(),
@@ -16,8 +23,10 @@ export async function registerNewUser(newUserData: any) {
     throw new Error(validateUserResult.error.message);
   }
 
-  const { firstName, lastName, email, password } = newUserData;
+  const { firstName, lastName, email, password } = validateUserResult.data;
   const findUser = await getUserByEmail({ email });
+
+  logger.info('newUserData: ', newUserData);
 
   if (findUser) {
     throw new Error('User already exists');
@@ -39,33 +48,35 @@ export async function registerNewUser(newUserData: any) {
     };
 
     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as string, {
-      expiresIn: '1m',
+      expiresIn: '1d',
     });
 
-    return {
+    reply.status(201).send({
       token,
-    };
+      userId: newUser.id,
+      role: newUser.role,
+    });
   } catch (error: any) {
-    throw new Error(error.message);
+    logger.error('Error in registerNewUser: ', error);
+    reply.status(500).send({
+      message: error?.message || 'Internal server error',
+    });
   }
 }
 
-export async function loginUser(loginData: {
-  email: string;
-  password: string;
-}) {
+export async function loginUser(request: FastifyRequest, reply: FastifyReply) {
+  const loginData = request.body;
+
   const validateUser = z.object({
     email: z.email(),
     password: z.string().min(8).max(255),
   });
 
-  const { email, password } = loginData;
-
   const validateUserResult = validateUser.safeParse(loginData);
-
   if (!validateUserResult.success) {
     throw new Error(validateUserResult.error.message);
   }
+  const { email, password } = validateUserResult.data;
 
   try {
     const user = await getUserByEmail({ email });
@@ -83,16 +94,48 @@ export async function loginUser(loginData: {
     const tokenPayload = {
       userId: user.id,
       email: user.email,
+      role: user.role,
     };
 
     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as string, {
-      expiresIn: '1m',
+      expiresIn: '1d',
     });
 
-    return {
+    reply.status(200).send({
       token,
-    };
+      userId: user.id,
+      role: user.role,
+    });
   } catch (error: any) {
-    throw new Error(error.message);
+    logger.error('Error in loginUser: ', error);
+    reply.status(500).send({
+      message: error?.message || 'Internal server error',
+    });
+  }
+}
+
+export async function verifyAccessToken(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  try {
+    const token = request.headers.authorization?.split(' ')[1];
+    if (!token) {
+      throw new Error('Token not found');
+    }
+    const decodedToken: any = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    );
+
+    console.log('decodedToken : ', decodedToken);
+    reply.status(200).send({
+      ...decodedToken,
+    });
+  } catch (error: any) {
+    logger.error('Error in verifyAccessToken: ', error);
+    reply.status(500).send({
+      message: error?.message || 'Internal server error',
+    });
   }
 }

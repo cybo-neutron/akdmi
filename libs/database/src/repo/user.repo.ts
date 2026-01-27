@@ -1,3 +1,4 @@
+import { logger } from '@org/utils';
 import { db } from '../db';
 import { User, UserInsertSchema, UserSchema } from '../schema/user.schema';
 import { eq } from 'drizzle-orm';
@@ -6,6 +7,12 @@ export async function createUser(
   userData: UserInsertSchema
 ): Promise<UserSchema> {
   const { firstName, lastName, email, password } = userData;
+  logger.info({
+    firstName,
+    lastName,
+    email,
+    password,
+  });
 
   const user = await db
     .insert(User)

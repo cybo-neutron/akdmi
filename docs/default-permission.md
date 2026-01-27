@@ -34,3 +34,18 @@ checkPermission({
 }){
 
 }
+
+
+Frontend
+
+student:
+    course:
+        create : false
+
+permissionType = {
+    [role] : {
+        [resource] : {
+            [action] : boolean
+        }
+    }
+}

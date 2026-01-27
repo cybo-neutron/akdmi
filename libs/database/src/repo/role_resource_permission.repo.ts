@@ -3,7 +3,7 @@ import {
   RoleResourcePermission,
   RoleResourcePermissionInsertType,
   RoleResourcePermissionSelectType,
-} from '../schema/role_resource_permission';
+} from '../schema/role_resource_permission.schema';
 import { eq } from 'drizzle-orm';
 
 export async function createRoleResourcePermission(

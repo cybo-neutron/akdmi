@@ -1,0 +1,1 @@
+ALTER TABLE "role_resource_permission" ADD COLUMN "role" "role" NOT NULL;
