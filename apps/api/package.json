@@ -95,6 +95,13 @@
             "buildTarget": "api:build:production"
           }
         }
+      },
+      "script": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "tsx {args.script}",
+          "cwd": "apps/api"
+        }
       }
     }
   },

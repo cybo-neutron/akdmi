@@ -7,25 +7,30 @@ export const logger = winston.createLogger({
   format: combine(
     errors({ stack: true }),
     splat(),
-    colorize({ all: true }),
     timestamp({
       format: 'YYYY-MM-DD HH:mm:ss',
     }),
+    colorize({all:true}),
     printf((info: any) => {
       const { timestamp, level, message, stack, ...meta } = info;
 
+      const jsonReplacer = (key: string, value: any) =>
+        typeof value === 'bigint' ? value.toString() : value;
+
       let msg = message;
-      if (typeof message === 'object') {
-        msg = JSON.stringify(message, null, 2);
+      if (typeof message === 'object' && message !== null) {
+        msg = JSON.stringify(message, jsonReplacer, 2);
       }
 
-      const metaStr = Object.keys(meta).length
-        ? `\n${JSON.stringify(
-            meta,
-            (key, value) =>
-              typeof value === 'bigint' ? value.toString() : value,
-            2
-          )}`
+      // Handle array-like metadata created by splat()
+      const metaKeys = Object.keys(meta);
+      const isArrayLike =
+        metaKeys.length > 0 && metaKeys.every((key) => !isNaN(Number(key)));
+
+      const metaData = isArrayLike ? Object.values(meta) : meta;
+
+      const metaStr = metaKeys.length
+        ? `\n${JSON.stringify(metaData, jsonReplacer, 2)}`
         : '';
 
       return `${timestamp} ${level}: ${msg}${
@@ -33,7 +38,5 @@ export const logger = winston.createLogger({
       }${metaStr}`;
     })
   ),
-  transports: [
-    new winston.transports.Console(),
-  ],
+  transports: [new winston.transports.Console()],
 });

@@ -3,8 +3,8 @@ import {
   registerNewUser,
   loginUser,
   verifyAccessToken,
+  getAllPermissions,
 } from '../controllers/auth.controller';
-import { logger } from '@org/utils';
 
 export const authRoutes = (fastify: FastifyInstance) => {
   fastify.post('/register', async function (request, reply) {
@@ -17,5 +17,9 @@ export const authRoutes = (fastify: FastifyInstance) => {
 
   fastify.get('/me', async function (request, reply) {
     await verifyAccessToken(request, reply);
+  });
+
+  fastify.get('/permissions', async function (request, reply) {
+    await getAllPermissions(request, reply);
   });
 };

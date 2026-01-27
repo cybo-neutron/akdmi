@@ -1,4 +1,9 @@
-import { createUser, getUserByEmail } from '@org/database/repo';
+import {
+  createUser,
+  getAllRoleResourcePermissions,
+  getUserByEmail,
+  getUserById,
+} from '@org/database/repo';
 import bcrypt from 'bcrypt';
 import z from 'zod';
 import jwt from 'jsonwebtoken';
@@ -44,7 +49,6 @@ export async function registerNewUser(
 
     const tokenPayload = {
       userId: newUser.id,
-      email: newUser.email,
     };
 
     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as string, {
@@ -93,8 +97,6 @@ export async function loginUser(request: FastifyRequest, reply: FastifyReply) {
 
     const tokenPayload = {
       userId: user.id,
-      email: user.email,
-      role: user.role,
     };
 
     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as string, {
@@ -128,12 +130,39 @@ export async function verifyAccessToken(
       process.env.JWT_SECRET as string
     );
 
-    console.log('decodedToken : ', decodedToken);
+    const { userId } = decodedToken;
+
+    const user = await getUserById({ id: userId });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
     reply.status(200).send({
-      ...decodedToken,
+      userId,
+      role: user.role,
+      email: user.email,
     });
   } catch (error: any) {
     logger.error('Error in verifyAccessToken: ', error);
+    reply.status(500).send({
+      message: error?.message || 'Internal server error',
+    });
+  }
+}
+
+export async function getAllPermissions(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  try {
+    const permissions = await getAllRoleResourcePermissions();
+
+    reply.status(200).send({
+      permissions,
+    });
+  } catch (error: any) {
+    logger.error('Error in getAllPermissions: ', error);
     reply.status(500).send({
       message: error?.message || 'Internal server error',
     });
