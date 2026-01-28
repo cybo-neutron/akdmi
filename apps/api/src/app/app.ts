@@ -8,9 +8,13 @@ import cors from '@fastify/cors';
 export interface AppOptions {}
 
 export async function app(fastify: FastifyInstance, opts: AppOptions) {
-  // Place here your custom code!
-
-  // Do not touch the following lines
+  // Register cors FIRST - before loading routes
+  // This ensures CORS headers are applied to all routes including preflight OPTIONS
+  await fastify.register(cors, {
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+  });
 
   // This loads all plugins defined in plugins
   // those should be support plugins that are reused
@@ -25,12 +29,5 @@ export async function app(fastify: FastifyInstance, opts: AppOptions) {
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'routes'),
     options: { ...opts },
-  });
-
-  // Register cors
-  fastify.register(cors, {
-    // origin: [process.env.FRONTEND_URL as string],
-    origin: 'http://localhost:5173',
-    credentials: true,
   });
 }
