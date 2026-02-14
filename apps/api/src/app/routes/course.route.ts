@@ -1,5 +1,5 @@
 import fastify, { FastifyInstance } from 'fastify';
-import { createNewCourse } from '../controllers/course.controller';
+import { createNewCourse, getCourseById } from '../controllers/course.controller';
 import { getAllCourses } from '../controllers/course.controller';
 import { updateCourse } from '../controllers/course.controller';
 import { authenticationMiddleware } from '../middleware/authentication.middleware';
@@ -20,6 +20,12 @@ export const courseRoutes = (fastify: FastifyInstance) => {
     preHandler: [authenticationMiddleware],
   },async function (request, reply) {
     await getAllCourses(request, reply);
+  });
+
+  fastify.get('/:id', {
+    preHandler: [authenticationMiddleware],
+  },async function (request, reply) {
+    await getCourseById(request, reply);
   });
 
   fastify.patch('/update', {

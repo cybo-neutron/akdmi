@@ -2,6 +2,7 @@ import {
   boolean,
   pgEnum,
   bigserial,
+  bigint,
   pgTable,
   varchar,
   text,
@@ -10,7 +11,9 @@ import { timestamps } from '../lib/timestamps';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { User } from './user.schema';
+import { Course } from './course.schema';
 import { integer } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
 export const ContentTypeEnum = {
   TEXT: 'text',
@@ -30,6 +33,10 @@ export const Content = pgTable('content', {
   type: ContentType('type').notNull(),
   isActive: boolean('is_active').default(true).notNull(),
   sequence: integer('sequence').default(1).notNull(),
+  parentId: bigint('parent_id', { mode: 'number' }),
+  courseId: bigint('course_id', { mode: 'number' })
+    .notNull()
+    .references(() => Course.id),
   createdBy: bigserial('created_by', { mode: 'number' })
     .notNull()
     .references(() => User.id),
@@ -38,6 +45,17 @@ export const Content = pgTable('content', {
     .references(() => User.id),
   ...timestamps,
 });
+
+export const contentRelations = relations(Content, ({ one }) => ({
+  parent: one(Content, {
+    fields: [Content.parentId],
+    references: [Content.id],
+  }),
+  course: one(Course, {
+    fields: [Content.courseId],
+    references: [Course.id],
+  }),
+}));
 
 export const ContentSchema = createSelectSchema(Content);
 export const ContentInsertSchema = createInsertSchema(Content);

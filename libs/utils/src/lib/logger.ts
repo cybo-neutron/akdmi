@@ -1,5 +1,7 @@
 import * as winston from 'winston';
 
+const { ENV = "development", SERVICE_NAME = "unnamed-service" } = process.env;
+
 const { combine, timestamp, printf, colorize, errors, splat } = winston.format;
 
 export const logger = winston.createLogger({
@@ -8,9 +10,9 @@ export const logger = winston.createLogger({
     errors({ stack: true }),
     splat(),
     timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss',
+      format: 'YYYY-MM-DD HH:mm:ss:SSS',
     }),
-    colorize({all:true}),
+    colorize({ all: true }),
     printf((info: any) => {
       const { timestamp, level, message, stack, ...meta } = info;
 
@@ -30,10 +32,10 @@ export const logger = winston.createLogger({
       const metaData = isArrayLike ? Object.values(meta) : meta;
 
       const metaStr = metaKeys.length
-        ? `\n${JSON.stringify(metaData, jsonReplacer, 2)}`
+        ? `${JSON.stringify(metaData, jsonReplacer, isArrayLike ? 0 : 2)}`
         : '';
 
-      return `${timestamp} ${level}: ${msg}${
+      return `[${ENV} - ${SERVICE_NAME}] [${timestamp}] ${level}: ${msg}${
         stack ? `\n${stack}` : ''
       }${metaStr}`;
     })

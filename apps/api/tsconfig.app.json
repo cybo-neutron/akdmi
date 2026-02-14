@@ -13,6 +13,9 @@
     },
     {
       "path": "../../libs/utils/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/aws/tsconfig.lib.json"
     }
   ]
 }

@@ -35,3 +35,9 @@ export async function getContentTextByContentId(
     .limit(1);
   return text || null;
 }
+
+export async function deleteContentTextByContentId(
+  contentId: number
+): Promise<void> {
+  await db.delete(ContentText).where(eq(ContentText.contentId, contentId));
+}

@@ -4,7 +4,7 @@ import {
   ContentInsertType,
   ContentSelectType,
 } from '../schema/content.schema';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, asc } from 'drizzle-orm';
 
 // --- Content Base Functions ---
 
@@ -50,7 +50,27 @@ export async function getContentsByUser(
     .where(and(eq(Content.createdBy, userId), eq(Content.isActive, true)));
 }
 
+export async function getContentsByCourse(
+  courseId: number
+): Promise<ContentSelectType[]> {
+  return db
+    .select()
+    .from(Content)
+    .where(and(eq(Content.courseId, courseId), eq(Content.isActive, true)))
+    .orderBy(asc(Content.sequence));
+}
+
 export async function deleteContent(id: number): Promise<void> {
+  // First, soft delete all child content (topics under this chapter)
+  await db
+    .update(Content)
+    .set({
+      isActive: false,
+      updatedAt: new Date(),
+    })
+    .where(eq(Content.parentId, id));
+
+  // Then soft delete the content itself
   await db
     .update(Content)
     .set({

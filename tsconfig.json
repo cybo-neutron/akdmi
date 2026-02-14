@@ -11,6 +11,15 @@
     },
     {
       "path": "./libs/utils"
+    },
+    {
+      "path": "./apps/queues"
+    },
+    {
+      "path": "./libs/aws"
+    },
+    {
+      "path": "./libs/queue-consumers"
     }
   ]
 }

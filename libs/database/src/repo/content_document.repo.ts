@@ -35,3 +35,11 @@ export async function getContentDocumentByContentId(
     .limit(1);
   return doc || null;
 }
+
+export async function deleteContentDocumentByContentId(
+  contentId: number
+): Promise<void> {
+  await db
+    .delete(ContentDocument)
+    .where(eq(ContentDocument.contentId, contentId));
+}
