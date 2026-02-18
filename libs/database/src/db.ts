@@ -1,7 +1,6 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { logger } from '@org/utils'
 
-
 let db: any;
 try {
     const client = drizzle(process.env.DATABASE_URL as string);

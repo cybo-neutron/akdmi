@@ -8,6 +8,7 @@ import {
   saveContentText,
   saveContentMedia,
   saveContentDocument,
+  getContentMediaPresignedUrlForUpload,
 } from '../controllers/content.controller';
 import { authenticationMiddleware } from '../middleware/authentication.middleware';
 
@@ -35,10 +36,6 @@ export const contentRoutes = (fastify: FastifyInstance) => {
       await getContentsByCourse(request, reply);
     }
   );
-
-  fastify.post('',{preHandler:[authenticationMiddleware]},async function(request,reply){
-    
-  })
 
   // Get content by ID
   fastify.get(
@@ -94,6 +91,14 @@ export const contentRoutes = (fastify: FastifyInstance) => {
     },
     async function (request, reply) {
       await saveContentMedia(request, reply);
+    }
+  );
+
+  fastify.post(
+    '/media/get-presigned-url-for-upload',
+    { preHandler: [authenticationMiddleware] },
+    async function (request, reply) {
+      await getContentMediaPresignedUrlForUpload(request, reply);
     }
   );
 

@@ -90,7 +90,7 @@ export class SQSConsumer implements Consumer {
 
   async preProcessEvent(event: any): Promise<void> {
     logger.info('Pre processing event:', event);
-    await this.eventHandler.preProcessEvent(event);
+    await this.eventHandler.preProcessEvent?.(event);
   }
 
   async processEvent(event: any): Promise<void> {
@@ -100,6 +100,6 @@ export class SQSConsumer implements Consumer {
 
   async postProcessEvent(event: any): Promise<void> {
     logger.info('Post processing event:', event);
-    await this.eventHandler.postProcessEvent(event);
+    await this.eventHandler.postProcessEvent?.(event);
   }
 }

@@ -14,14 +14,11 @@ import {
   updateContentTextByContentId,
   updateContentMediaByContentId,
   updateContentDocumentByContentId,
-  deleteContentTextByContentId,
-  deleteContentMediaByContentId,
-  deleteContentDocumentByContentId,
 } from '@org/database/repo';
 import z from 'zod';
 import { v4 as uuidv4 } from 'uuid';
-import { getFileExtension, logger } from '@org/utils';
-import { getSignedUploadUrl } from '@org/aws';
+import { getFileCategory, getFileExtension, logger } from '@org/utils';
+import { getSignedDownloadUrl, getSignedUploadUrl } from '@org/aws';
 
 // Create new content (chapter or topic) — base record only
 export async function createContent(
@@ -144,6 +141,21 @@ export async function getContentById(
       typeData = await getContentTextByContentId(content.id);
     } else if (content.type === 'media') {
       typeData = await getContentMediaByContentId(content.id);
+
+      if (typeData?.url) {
+        const [bucket, contentId, objectKey] = typeData?.url.split('::');
+
+        const finalObjectKey = `${contentId}::${objectKey}`;
+
+        if (bucket && contentId && finalObjectKey) {
+          try {
+            const url = await getSignedDownloadUrl(bucket, finalObjectKey);
+            typeData.url = url as string;
+          } catch (error) {
+            logger.error('Error generating signed URL: ', error);
+          }
+        }
+      }
     } else if (content.type === 'document') {
       typeData = await getContentDocumentByContentId(content.id);
     }
@@ -324,6 +336,59 @@ export async function saveContentMedia(
   }
 }
 
+export async function getContentMediaPresignedUrlForUpload(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  try {
+    const schema = z.object({
+      name: z.string(),
+      contentType: z.string(),
+      contentId: z.number(),
+    });
+
+    const result = schema.safeParse(request.body);
+    if (!result.success) {
+      return reply
+        .status(400)
+        .send({ message: 'Invalid data', errors: result.error.issues });
+    }
+
+    const { name, contentType, contentId } = result.data;
+
+    const extension = getFileExtension(name);
+
+    const bucketName = process.env.AWS_CONTENT_TEMPORARY_BUCKET as string;
+    if (!bucketName) {
+      throw Error('bucket name empty');
+    }
+    const objectKey = `${contentId}::${uuidv4()}.${extension}`;
+
+    const signedUrl = await getSignedUploadUrl(
+      bucketName,
+      objectKey,
+      contentType
+    );
+
+    const fileCategory = getFileCategory(contentType);
+
+    return reply.status(200).send({
+      signedUrl,
+      bucketName,
+      objectKey,
+      fileCategory,
+    });
+  } catch (error: any) {
+    logger.error(
+      'Error getting content media presigned url for upload: ',
+      error
+    );
+    return reply
+      .status(500)
+      .send({ message: error?.message || 'Internal Server Error' });
+  }
+}
+
 // Save (create or update) document content for a given content ID
 export async function saveContentDocument(
   request: FastifyRequest,
@@ -364,42 +429,6 @@ export async function saveContentDocument(
     return reply.status(200).send(typeData);
   } catch (error: any) {
     logger.error('Error saving content document: ', error);
-    return reply
-      .status(500)
-      .send({ message: error?.message || 'Internal Server Error' });
-  }
-}
-
-export async function getContentUploadPreSignedUrl(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
-  try {
-    const GetSignedUrlSchema = z.object({
-      bucketName: z.string(),
-      objectKey: z.string(),
-      contentType: z.string(),
-    });
-
-    const result = GetSignedUrlSchema.safeParse(request.body);
-
-    if (!result.success) {
-      logger.error('Invalid data: ', result.error);
-      return reply
-        .status(400)
-        .send({ message: 'Invalid data', errors: result.error.issues });
-    }
-
-    const { bucketName, objectKey, contentType } = result.data;
-
-    const filename = uuidv4();
-    const fileExtension = getFileExtension(objectKey);
-    const directory = objectKey.substring(0, objectKey.lastIndexOf('/'));
-    const finalObjectKey = `${directory}/${filename}.${fileExtension}`;
-
-    await getSignedUploadUrl();
-  } catch (error: any) {
-    logger.error('Error getting content upload pre-signed URL: ', error);
     return reply
       .status(500)
       .send({ message: error?.message || 'Internal Server Error' });

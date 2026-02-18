@@ -97,5 +97,9 @@
       }
     }
   },
-  "dependencies": {}
+  "dependencies": {
+    "@types/fluent-ffmpeg": "^2.1.28",
+    "ffmpeg-static": "^5.3.0",
+    "fluent-ffmpeg": "^2.1.3"
+  }
 }

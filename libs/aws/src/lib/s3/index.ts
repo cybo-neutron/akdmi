@@ -1,11 +1,12 @@
-import dotenv from 'dotenv';
-dotenv.config();
+// import dotenv from 'dotenv';
+// dotenv.config();
 import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { ReadStream } from 'fs';
 
 const { AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_LOCALSTACK } =
   process.env;
@@ -23,6 +24,7 @@ const s3Client = new S3Client({
     endpoint: 'http://localhost:4566',
     forcePathStyle: true,
   }),
+  // requestChecksumCalculation: 'WHEN_REQUIRED',
 });
 
 export async function getSignedUploadUrl(
@@ -65,7 +67,7 @@ export async function uploadObject({
 }: {
   bucket: string;
   objectKey: string;
-  body: ReadableStream;
+  body: ReadStream | ReadableStream | Buffer<ArrayBuffer>;
   contentType: string;
 }) {
   const command = new PutObjectCommand({

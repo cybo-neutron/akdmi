@@ -105,8 +105,11 @@ export async function loginUser(request: FastifyRequest, reply: FastifyReply) {
 
     reply.status(200).send({
       token,
+      firstName: user.firstName,
+      lastName: user.lastName,
       userId: user.id,
       role: user.role,
+      avatarUrl: user.avatarUrl,
     });
   } catch (error: any) {
     logger.error('Error in loginUser: ', error);
@@ -140,8 +143,11 @@ export async function verifyAccessToken(
 
     reply.status(200).send({
       userId,
+      firstName : user.firstName,
+      lastName : user.lastName,
       role: user.role,
       email: user.email,
+      avatarUrl : user.avatarUrl
     });
   } catch (error: any) {
     logger.error('Error in verifyAccessToken: ', error);
