@@ -10,7 +10,8 @@ import {
   saveContentDocument,
   getContentMediaPresignedUrlForUpload,
 } from '../controllers/content.controller';
-import { authenticationMiddleware } from '../middleware/authentication.middleware';
+import { authenticateWithRole, authenticationMiddleware } from '../middleware/authentication.middleware';
+import { UserRole } from '../constant/UserRoles';
 
 export const contentRoutes = (fastify: FastifyInstance) => {
   // ─── Base Content ─────────────────────────────────────
@@ -19,7 +20,7 @@ export const contentRoutes = (fastify: FastifyInstance) => {
   fastify.post(
     '/create',
     {
-      preHandler: [authenticationMiddleware],
+      preHandler: [authenticateWithRole({roles : [UserRole.ADMIN,UserRole.MANAGER,UserRole.MENTOR]})],
     },
     async function (request, reply) {
       await createContent(request, reply);
@@ -52,7 +53,7 @@ export const contentRoutes = (fastify: FastifyInstance) => {
   fastify.patch(
     '/update',
     {
-      preHandler: [authenticationMiddleware],
+      preHandler: [authenticateWithRole({roles : [UserRole.ADMIN,UserRole.MANAGER,UserRole.MENTOR]})],
     },
     async function (request, reply) {
       await updateContent(request, reply);
@@ -63,7 +64,7 @@ export const contentRoutes = (fastify: FastifyInstance) => {
   fastify.delete(
     '/:id',
     {
-      preHandler: [authenticationMiddleware],
+      preHandler: [authenticateWithRole({roles : [UserRole.ADMIN,UserRole.MANAGER,UserRole.MENTOR]})],
     },
     async function (request, reply) {
       await deleteContent(request, reply);
@@ -76,7 +77,7 @@ export const contentRoutes = (fastify: FastifyInstance) => {
   fastify.post(
     '/text/save',
     {
-      preHandler: [authenticationMiddleware],
+      preHandler: [authenticateWithRole({roles : [UserRole.ADMIN,UserRole.MANAGER,UserRole.MENTOR]})],
     },
     async function (request, reply) {
       await saveContentText(request, reply);
@@ -87,7 +88,7 @@ export const contentRoutes = (fastify: FastifyInstance) => {
   fastify.post(
     '/media/save',
     {
-      preHandler: [authenticationMiddleware],
+      preHandler: [authenticateWithRole({roles : [UserRole.ADMIN,UserRole.MANAGER,UserRole.MENTOR]})],
     },
     async function (request, reply) {
       await saveContentMedia(request, reply);
@@ -106,7 +107,7 @@ export const contentRoutes = (fastify: FastifyInstance) => {
   fastify.post(
     '/document/save',
     {
-      preHandler: [authenticationMiddleware],
+      preHandler: [authenticateWithRole({roles : [UserRole.ADMIN,UserRole.MANAGER,UserRole.MENTOR]})],
     },
     async function (request, reply) {
       await saveContentDocument(request, reply);

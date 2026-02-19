@@ -28,11 +28,18 @@ export const User = pgTable('user', {
   ...timestamps,
 });
 
-export const UserSelectSchema = createInsertSchema(User).omit({}).extend({
-  id: z.number().optional(),
-});
+export const UserSelectSchema = createInsertSchema(User)
+  .omit({ role: true })
+  .extend({
+    id: z.number().optional(),
+    role: z.enum(UserRoleEnum).optional(),
+  });
 
-const UserInsertSchema_ = createInsertSchema(User);
+const UserInsertSchema_ = createInsertSchema(User)
+  .omit({ role: true })
+  .extend({
+    role: z.enum(UserRoleEnum).optional(),
+  });
 
 export type UserSchema = z.infer<typeof UserSelectSchema>;
 export type UserInsertSchema = z.infer<typeof UserInsertSchema_>;

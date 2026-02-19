@@ -6,7 +6,7 @@ import { contentRoutes } from './content.route';
 
 export default async function (fastify: FastifyInstance) {
   fastify.register(userRoutes, {
-    prefix: 'users',
+    prefix: '/v1/users',
   });
 
   fastify.register(authRoutes, {
