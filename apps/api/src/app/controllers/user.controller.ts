@@ -108,15 +108,41 @@ export async function getAllUsers(
   reply: FastifyReply
 ) {
   try {
-    const users = await getAllUsersRepo();
+    const querySchema = z.object({
+      page: z
+        .string()
+        .optional()
+        .transform((v) => (v ? Number(v) : 1)),
+      limit: z
+        .string()
+        .optional()
+        .transform((v) => (v ? Number(v) : 10)),
+      search: z.string().optional(),
+    });
+
+    const queryResult = querySchema.safeParse(request.query);
+
+    if (!queryResult.success) {
+      return reply.status(400).send({ message: 'Invalid query parameters' });
+    }
+
+    const { page, limit, search } = queryResult.data;
+
+    const result = await getAllUsersRepo({ page, limit, search });
 
     // Remove password from all users
-    const usersResponse = users.map((user) => {
+    const usersResponse = result.users.map((user) => {
       const { password: _, ...userResponse } = user;
       return userResponse;
     });
 
-    return reply.status(200).send(usersResponse);
+    return reply.status(200).send({
+      users: usersResponse,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+    });
   } catch (error: any) {
     logger.error('Error in getAllUsers controller: ', error);
     return reply.status(500).send({

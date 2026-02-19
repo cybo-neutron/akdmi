@@ -1,4 +1,3 @@
-import { logger } from '@org/utils';
 import { db } from '../db';
 import {
   User,
@@ -6,7 +5,21 @@ import {
   UserSchema,
   UserRoleEnum,
 } from '../schema/user.schema';
-import { eq } from 'drizzle-orm';
+import { eq, ilike, or, sql } from 'drizzle-orm';
+
+export interface PaginatedUsersParams {
+  page: number;
+  limit: number;
+  search?: string;
+}
+
+export interface PaginatedUsersResult {
+  users: UserSchema[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
 export async function createUser(
   userData: UserInsertSchema
@@ -56,10 +69,38 @@ export async function getUserByEmail({
   return null;
 }
 
-// get all users
-export async function getAllUsers(): Promise<UserSchema[]> {
-  const users = await db.select().from(User);
-  return users;
+// get all users with pagination and search
+export async function getAllUsers(
+  params: PaginatedUsersParams
+): Promise<PaginatedUsersResult> {
+  const { page, limit, search } = params;
+  const offset = (page - 1) * limit;
+
+  const searchCondition = search
+    ? or(
+        ilike(User.firstName, `%${search}%`),
+        ilike(User.lastName, `%${search}%`),
+        ilike(User.email, `%${search}%`)
+      )
+    : undefined;
+
+  const [users, countResult] = await Promise.all([
+    db.select().from(User).where(searchCondition).limit(limit).offset(offset),
+    db
+      .select({ count: sql<number>`cast(count(*) as int)` })
+      .from(User)
+      .where(searchCondition),
+  ]);
+
+  const total = countResult[0]?.count ?? 0;
+
+  return {
+    users,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
 }
 
 // update user

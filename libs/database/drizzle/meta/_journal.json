@@ -36,6 +36,13 @@
       "when": 1770659355511,
       "tag": "0004_flowery_veda",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1771525949703,
+      "tag": "0005_parched_cable",
+      "breakpoints": true
     }
   ]
 }
