@@ -6,3 +6,4 @@ export * from './content_media.repo.js';
 export * from './content_document.repo.js';
 export * from './role_resource_permission.repo.js';
 export * from './course_enrollment.repo.js';
+export * from './blog.repo.js';

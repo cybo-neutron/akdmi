@@ -43,6 +43,13 @@
       "when": 1771525949703,
       "tag": "0005_parched_cable",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1771529050855,
+      "tag": "0006_sparkling_blacklash",
+      "breakpoints": true
     }
   ]
 }
