@@ -4,10 +4,8 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 
-// import { createLogger } from '@turbo-repo/utils';
 import { SQSConsumerConfig } from './consumer_config.interface';
 import { Consumer, EventHandler } from './consumer.interface';
-// const logger = createLogger({ service: 'sqs-consumer' });
 import { logger } from '@org/utils';
 
 const { AWS_REGION, AWS_LOCALSTACK } = process.env;
@@ -20,7 +18,7 @@ export class SQSConsumer implements Consumer {
 
   eventHandler: EventHandler;
 
-  pollingInterval: NodeJS.Timeout | null = null;
+  running = false;
 
   constructor(config: SQSConsumerConfig, eventHandler: EventHandler) {
     this.config = config;
@@ -33,6 +31,7 @@ export class SQSConsumer implements Consumer {
   }
 
   async init(): Promise<void> {
+    this.running = true;
     logger.info('SQS Consumer started');
     this.pollForMessages();
     // this.pollingInterval = setInterval(() => {
@@ -54,8 +53,7 @@ export class SQSConsumer implements Consumer {
       if (data.Messages && data.Messages.length > 0) {
         for (const message of data.Messages) {
           logger.info(
-            `Received message for ${this.config.queueUrl}:`,
-            message.Body
+            `Received message for ${this.config.queueUrl}: ${message.Body}`
           );
 
           // e.g., perform a task, update a database, etc.
@@ -85,7 +83,11 @@ export class SQSConsumer implements Consumer {
       await new Promise((resolve) => setTimeout(resolve, 5 * 1000));
     }
 
-    setImmediate(() => this.pollForMessages());
+    if (this.running) {
+      setImmediate(() => this.pollForMessages());
+    } else {
+      logger.info(`SQS Consumer stopped for ${this.config.queueUrl}`);
+    }
   }
 
   async preProcessEvent(event: any): Promise<void> {
@@ -101,5 +103,10 @@ export class SQSConsumer implements Consumer {
   async postProcessEvent(event: any): Promise<void> {
     logger.info('Post processing event:', event);
     await this.eventHandler.postProcessEvent?.(event);
+  }
+
+  async stop(): Promise<void> {
+    logger.info(`Stopping SQS Consumer for ${this.config.queueUrl}...`);
+    this.running = false;
   }
 }

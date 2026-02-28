@@ -4,6 +4,7 @@ import { BullMQConsumerConfig } from './consumer_config.interface';
 
 export class BullMQConsumer implements Consumer {
   consumer: Worker;
+  running = false;
   constructor(config: BullMQConsumerConfig) {
     this.consumer = new Worker(
       config.queueName,
@@ -27,6 +28,11 @@ export class BullMQConsumer implements Consumer {
   }
 
   postProcessEvent(event: any): Promise<void> {
+    return Promise.resolve();
+  }
+
+  stop(): Promise<void> {
+    this.running = false;
     return Promise.resolve();
   }
 }

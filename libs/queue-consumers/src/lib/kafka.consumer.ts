@@ -2,6 +2,7 @@ import { Consumer } from './consumer.interface';
 import { KafkaConsumerConfig } from './consumer_config.interface';
 
 export class KafkaConsumer implements Consumer {
+  running = false;
   config: KafkaConsumerConfig;
   constructor(config: KafkaConsumerConfig) {
     this.config = config;
@@ -18,6 +19,11 @@ export class KafkaConsumer implements Consumer {
   }
 
   async postProcessEvent(event: any): Promise<void> {
+    return Promise.resolve();
+  }
+
+  stop(): Promise<void> {
+    this.running = false;
     return Promise.resolve();
   }
 }

@@ -39,11 +39,6 @@
     "vite": "^7.0.0",
     "vitest": "^4.0.0"
   },
-  "workspaces": [
-    "packages/*",
-    "libs/*",
-    "apps/*"
-  ],
   "dependencies": {
     "@fastify/autoload": "~6.0.3",
     "@fastify/sensible": "~6.0.2",

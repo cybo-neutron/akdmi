@@ -143,13 +143,13 @@ export async function getContentById(
       typeData = await getContentMediaByContentId(content.id);
 
       if (typeData?.url) {
-        const [bucket, contentId, objectKey] = typeData?.url.split('::');
+        const [bucket, objectKey] = typeData.url.split('::');
 
-        const finalObjectKey = `${contentId}::${objectKey}`;
+        // const finalObjectKey = `${contentId}::${objectKey}`;
 
-        if (bucket && contentId && finalObjectKey) {
+        if (bucket && objectKey) {
           try {
-            const url = await getSignedDownloadUrl(bucket, finalObjectKey);
+            const url = await getSignedDownloadUrl(bucket, objectKey);
             typeData.url = url as string;
           } catch (error) {
             logger.error('Error generating signed URL: ', error);
@@ -362,15 +362,15 @@ export async function getContentMediaPresignedUrlForUpload(
     if (!bucketName) {
       throw Error('bucket name empty');
     }
-    const objectKey = `${contentId}::${uuidv4()}.${extension}`;
+    const fileCategory = getFileCategory(contentType);
+
+    const objectKey = `${fileCategory}/${contentId}_${uuidv4()}.${extension}`;
 
     const signedUrl = await getSignedUploadUrl(
       bucketName,
       objectKey,
       contentType
     );
-
-    const fileCategory = getFileCategory(contentType);
 
     return reply.status(200).send({
       signedUrl,

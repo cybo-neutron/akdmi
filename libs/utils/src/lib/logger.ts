@@ -1,14 +1,25 @@
 import * as winston from 'winston';
 
-const { ENV = "development", SERVICE_NAME = "unnamed-service" } = process.env;
+const { ENV = 'development', SERVICE_NAME = 'unnamed-service' } = process.env;
 
-const { combine, timestamp, printf, colorize, errors, splat } = winston.format;
+const {
+  combine,
+  timestamp,
+  printf,
+  colorize,
+  errors,
+  splat,
+  prettyPrint,
+  json,
+} = winston.format;
 
 export const logger = winston.createLogger({
   level: 'http',
   format: combine(
     errors({ stack: true }),
-    splat(),
+    // splat(),
+    // json(),
+    // prettyPrint(),
     timestamp({
       format: 'YYYY-MM-DD HH:mm:ss:SSS',
     }),
@@ -19,25 +30,23 @@ export const logger = winston.createLogger({
       const jsonReplacer = (key: string, value: any) =>
         typeof value === 'bigint' ? value.toString() : value;
 
+      // console.log(meta)
+      const splatArgs = (meta[Symbol.for('splat') as any] as any[]) || [];
+
       let msg = message;
-      if (typeof message === 'object' && message !== null) {
-        msg = JSON.stringify(message, jsonReplacer, 2);
-      }
+      // if (typeof message === 'object' && message !== null) {
+      //   msg = JSON.stringify(message, jsonReplacer, 2);
+      // }
 
-      // Handle array-like metadata created by splat()
-      const metaKeys = Object.keys(meta);
-      const isArrayLike =
-        metaKeys.length > 0 && metaKeys.every((key) => !isNaN(Number(key)));
+      const rest = splatArgs
+        .map((arg: any) =>
+          typeof arg === 'object' ? JSON.stringify(arg, jsonReplacer, 2) : arg
+        )
+        .join(' ');
 
-      const metaData = isArrayLike ? Object.values(meta) : meta;
-
-      const metaStr = metaKeys.length
-        ? `${JSON.stringify(metaData, jsonReplacer, isArrayLike ? 0 : 2)}`
-        : '';
-
-      return `[${ENV} - ${SERVICE_NAME}] [${timestamp}] ${level}: ${msg}${
+      return `[${ENV} - ${SERVICE_NAME}] [${timestamp}] ${level}: ${msg} ${rest}${
         stack ? `\n${stack}` : ''
-      }${metaStr}`;
+      }`;
     })
   ),
   transports: [new winston.transports.Console()],

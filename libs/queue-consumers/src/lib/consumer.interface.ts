@@ -5,6 +5,8 @@ export interface EventHandler {
 }
 
 export interface Consumer {
+  running: boolean;
+  stop(): Promise<void>;
   init(): Promise<void>;
   preProcessEvent: EventHandler['preProcessEvent'];
   processEvent: EventHandler['processEvent'];
