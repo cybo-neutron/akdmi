@@ -16,6 +16,7 @@ import {
   readdirSync,
   createReadStream,
   rmSync,
+  writeFileSync,
 } from 'fs';
 const fs = { promises: fsPromises, constants: fsConstants, ...require('fs') };
 import path from 'path';
@@ -211,6 +212,72 @@ async function downloadVideoFromS3(bucket: string, key: string) {
   return { downloadedFilePath: tempFilePath };
 }
 
+async function createMasterPlaylist(outputDir: string) {
+  const lines = ['#EXTM3U', '#EXT-X-VERSION:3'];
+
+  for (const v of resolutions) {
+    lines.push(
+      `#EXT-X-STREAM-INF:BANDWIDTH=${v.videoBitrate},RESOLUTION=${v.width}x${v.height}`
+    );
+    lines.push(`${v.name}_playlist.m3u8`);
+  }
+
+  // await fs.writeFile(path.join(outputDir, 'master.m3u8'), lines.join('\n'));
+  writeFileSync(path.join(outputDir, 'master.m3u8'), lines.join('\n'));
+}
+
+async function uploadTranscodedFilesToS3(
+  dirToRead: string,
+  keyWithoutExtension: string
+) {
+  await createMasterPlaylist(dirToRead);
+  const files = readdirSync(dirToRead);
+  if (!contentBucket) {
+    throw new Error('CONTENT_BUCKET is not defined');
+  }
+  logger.info('master playlist created');
+
+  const s3BaseDir = `processed/${keyWithoutExtension}`;
+
+  for (const file of files) {
+    const filePath = path.join(dirToRead, file);
+    const s3Key = `${s3BaseDir}/${file}`;
+    const readStream = createReadStream(filePath);
+    await uploadObject({
+      bucket: contentBucket,
+      objectKey: s3Key,
+      body: readStream,
+      contentType: file.endsWith('.m3u8')
+        ? 'application/x-mpegURL'
+        : 'video/mp2t',
+    });
+  }
+
+  const key_code = keyWithoutExtension.split('/').at(-1);
+  if (key_code) {
+    const contentId = key_code.split('_').at(0);
+    const url = `${contentBucket}::${s3BaseDir}/master.m3u8`;
+    if (contentId) {
+      logger.info('contentId : ', contentId);
+
+      const content = await getContentMediaByContentId(Number(contentId));
+      logger.info('Media content searched : ', content);
+      if (!content) {
+        throw new Error('Content not found');
+      }
+      await updateContentMediaByContentId(Number(contentId), {
+        url,
+      });
+    }
+  }
+}
+
+async function cleanup(dir: string) {
+  rmSync(dir, {
+    recursive: true,
+  });
+}
+
 async function transcodeVideo({
   resolution,
   outputDir,
@@ -222,27 +289,9 @@ async function transcodeVideo({
   downloadedFilePath: string;
   keyWithoutExtension: string;
 }) {
-  const outputDirForCurrentResolution = path.join(
-    outputDir
-    // `${resolution.name}`
-  );
-  mkdirSync(outputDirForCurrentResolution, { recursive: true });
-  logger.info(
-    'output dir for current resolution : ',
-    outputDirForCurrentResolution
-  );
+  const outputM3U8 = path.join(outputDir, `${resolution.name}_playlist.m3u8`);
 
-  const outputM3U8 = path.join(
-    outputDirForCurrentResolution,
-    `${resolution.name}_playlist.m3u8`
-  );
-
-  const outputs = path.join(
-    outputDirForCurrentResolution,
-    `${resolution.name}_%03d.ts`
-  );
-  logger.info('outputm3u8 : ', outputM3U8);
-  logger.info('outputs : ', outputs);
+  const outputs = path.join(outputDir, `${resolution.name}_%03d.ts`);
 
   // Log FFmpeg command for debugging
   const ffmpegCommand = [
@@ -278,15 +327,11 @@ async function transcodeVideo({
     resolution.audioBitrate,
     '-hls_segment_filename',
     outputs,
-    '-master_pl_name',
-    'master.m3u8',
   ];
 
   // logger.debug(
   //   `FFmpeg command: ffmpeg -i ${tempFilePath} ${ffmpegCommand.join(" ")} ${outputM3U8}`
   // );
-
-  logger.info('Starting conversion.....');
 
   try {
     // run the conversion
@@ -294,71 +339,12 @@ async function transcodeVideo({
       const ff = ffmpeg()
         .input(downloadedFilePath)
         .on('start', (commandLine) => {
-          logger.debug('FFmpeg command started:', commandLine);
-        })
-        .on('stderr', (stderrLine) => {
-          logger.debug(`FFmpeg stderr: ${stderrLine}`);
+          logger.info('FFmpeg command started:', commandLine);
         })
         .outputOptions(ffmpegCommand)
         .output(outputM3U8)
-        .on(
-          'progress',
-          (p) => {
-            logger.info(`Processing ${resolution.name}: ${p.percent}%   \r`);
-          }
-
-          // logger.debug(
-          //   `Processing ${resolution.name}: ${Math.round(p.percent)}%   \r`
-          // )
-        )
         .on('end', async () => {
           logger.info(`\n✅ ${resolution.name} done.`);
-          logger.info(`Time to send data to S3`);
-          const files = readdirSync(outputDirForCurrentResolution);
-          logger.info('contentBucket : ', contentBucket);
-          if (!contentBucket) {
-            throw new Error('CONTENT_BUCKET is not defined');
-          }
-          // const keyWithoutExtension = key.split('/').at(-1).split('.')[0];
-          const s3BaseDir = `processed/${keyWithoutExtension}`;
-          for (const file of files) {
-            const filePath = path.join(outputDirForCurrentResolution, file);
-            const s3Key = `${s3BaseDir}/${file}`;
-            const readStream = createReadStream(filePath);
-            await uploadObject({
-              bucket: contentBucket,
-              objectKey: s3Key,
-              body: readStream,
-              contentType: file.endsWith('.m3u8')
-                ? 'application/x-mpegURL'
-                : 'video/mp2t',
-            });
-            // delete directory from local
-          }
-
-          const key_code = keyWithoutExtension.split('/').at(-1);
-          if (key_code) {
-            const contentId = key_code.split('_').at(0);
-            const url = `${contentBucket}::${s3BaseDir}/master.m3u8`;
-            if (contentId) {
-              logger.info('contentId : ', contentId);
-
-              const content = await getContentMediaByContentId(
-                Number(contentId)
-              );
-              logger.info('Media content searched : ', content);
-              if (!content) {
-                throw new Error('Content not found');
-              }
-              await updateContentMediaByContentId(Number(contentId), {
-                url,
-              });
-            }
-          }
-
-          // rmSync(outputDirForCurrentResolution, {
-          //   recursive: true,
-          // });
           resolve(true);
         })
         .on('error', (err: any, stdout: any, stderr: any) => {
@@ -426,8 +412,6 @@ async function processEvent(event: any) {
 
       const { downloadedFilePath } = await downloadVideoFromS3(bucket, key);
 
-      logger.info('Downloaded file path : ', downloadedFilePath);
-
       // Verify FFmpeg is available
       if (!ffmpegPath) {
         throw new Error(
@@ -438,7 +422,6 @@ async function processEvent(event: any) {
       // Create output directory to keep the processed files
       const outputDir = path.join('/tmp', 'processed', keyWithoutExtension);
       mkdirSync(outputDir, { recursive: true });
-      logger.info('outputDir : ', outputDir);
 
       for (const resolution of resolutions) {
         try {
@@ -460,6 +443,13 @@ async function processEvent(event: any) {
           // throw error;
         }
       }
+
+      logger.info('📤 uploading files to S3');
+      await uploadTranscodedFilesToS3(outputDir, keyWithoutExtension);
+      logger.info('✅ files uploaded to S3');
+
+      // await cleanup(outputDir);
+
       // Clean up the temporary file
       // try {
       //   if (
