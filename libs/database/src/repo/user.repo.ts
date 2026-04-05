@@ -5,7 +5,7 @@ import {
   UserSchema,
   UserRoleEnum,
 } from '../schema/user.schema';
-import { eq, ilike, or, sql } from 'drizzle-orm';
+import { and, eq, ilike, or, sql } from 'drizzle-orm';
 
 export interface PaginatedUsersParams {
   page: number;
@@ -43,10 +43,20 @@ export async function createUser(
 
 export async function getUserById({
   id,
+  getOnlyActiveUser = true,
 }: {
   id: number;
+  getOnlyActiveUser?: boolean;
 }): Promise<UserSchema | null> {
-  const user = await db.select().from(User).where(eq(User.id, id)).limit(1);
+  const user = await db
+    .select()
+    .from(User)
+    .where(
+      getOnlyActiveUser
+        ? and(eq(User.id, id), eq(User.isActive, true))
+        : eq(User.id, id)
+    )
+    .limit(1);
   if (user && user.length > 0) {
     return user[0];
   }

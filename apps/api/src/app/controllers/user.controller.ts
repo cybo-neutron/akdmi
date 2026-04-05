@@ -55,7 +55,7 @@ export async function createNewUser(
     });
 
     // Remove password from response
-    const { password: _, ...userResponse } = newUser;
+    const { password: _ , ...userResponse } = newUser;
 
     return reply.status(201).send(userResponse);
   } catch (error: any) {

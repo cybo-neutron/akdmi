@@ -1,4 +1,10 @@
-import { createRoleResourcePermission, db } from '@org/database';
+import {
+  createRoleResourcePermission,
+  db,
+  getAllRoleResourcePermissions,
+  updateRoleResourcePermission,
+} from '@org/database';
+import { UserRole } from '../../app/constant/UserRoles';
 
 console.log('Database url : ', process.env.DATABASE_URL);
 
@@ -12,23 +18,95 @@ const Action = {
 async function script() {
   const data = {
     course: {
-      student: [Action.read],
-      mentor: [Action.read, Action.create, Action.update, Action.delete],
-      admin: [Action.read, Action.create, Action.update, Action.delete],
+      [UserRole.STUDENT]: [Action.read],
+      [UserRole.MENTOR]: [
+        Action.read,
+        Action.create,
+        Action.update,
+        Action.delete,
+      ],
+      [UserRole.ADMIN]: [
+        Action.read,
+        Action.create,
+        Action.update,
+        Action.delete,
+      ],
+      [UserRole.MANAGER]: [
+        Action.read,
+        Action.create,
+        Action.update,
+        Action.delete,
+      ],
     },
     content: {
-      student: [Action.read],
-      mentor: [Action.read, Action.create, Action.update, Action.delete],
-      admin: [Action.read, Action.create, Action.update, Action.delete],
+      [UserRole.STUDENT]: [Action.read],
+      [UserRole.MENTOR]: [
+        Action.read,
+        Action.create,
+        Action.update,
+        Action.delete,
+      ],
+      [UserRole.ADMIN]: [
+        Action.read,
+        Action.create,
+        Action.update,
+        Action.delete,
+      ],
+      [UserRole.MANAGER]: [
+        Action.read,
+        Action.create,
+        Action.update,
+        Action.delete,
+      ],
     },
     user: {
-      mentor: [Action.read, Action.create, Action.update, Action.delete],
-      admin: [Action.read, Action.create, Action.update, Action.delete],
+      [UserRole.STUDENT]: [Action.read],
+      [UserRole.MENTOR]: [Action.read],
+      [UserRole.ADMIN]: [
+        Action.read,
+        Action.create,
+        Action.update,
+        Action.delete,
+      ],
+      [UserRole.MANAGER]: [
+        Action.read,
+        Action.create,
+        Action.update,
+        Action.delete,
+      ],
+    },
+    blog: {
+      [UserRole.STUDENT]: [Action.read],
+      [UserRole.MENTOR]: [
+        Action.read,
+        Action.create,
+        Action.update,
+        Action.delete,
+      ],
+      [UserRole.ADMIN]: [
+        Action.read,
+        Action.create,
+        Action.update,
+        Action.delete,
+      ],
+      [UserRole.MANAGER]: [
+        Action.read,
+        Action.create,
+        Action.update,
+        Action.delete,
+      ],
     },
   };
 
+  const rolePermissions = await getAllRoleResourcePermissions();
+
   for (const [resource, roleWitPermissions] of Object.entries(data)) {
     for (const [role, permissions] of Object.entries(roleWitPermissions)) {
+      const existingPermission = rolePermissions.find(
+        (permission) =>
+          permission.resource === resource && permission.role === role
+      );
+
       const actionPermissionObj = {
         read: false,
         create: false,
@@ -50,11 +128,17 @@ async function script() {
         }
       }
 
-      await createRoleResourcePermission({
-        role: role as any,
-        resource: resource as any,
-        permission: actionPermissionObj,
-      });
+      if (existingPermission) {
+        await updateRoleResourcePermission(existingPermission.id, {
+          permission: actionPermissionObj,
+        });
+      } else {
+        await createRoleResourcePermission({
+          role: role as any,
+          resource: resource as any,
+          permission: actionPermissionObj,
+        });
+      }
     }
   }
 }

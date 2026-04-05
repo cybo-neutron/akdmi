@@ -6,13 +6,20 @@ import {
   updateExistingBlog,
   deleteExistingBlog,
 } from '../controllers/blog.controller';
-import { authenticationMiddleware } from '../middleware/authentication.middleware';
+import { authenticateWithRole } from '../middleware/authentication.middleware';
+import { UserRole } from '../constant/UserRoles';
 
 export const blogRoutes = (fastify: FastifyInstance) => {
   // Create a new blog (authenticated)
   fastify.post(
     '/create',
-    { preHandler: [authenticationMiddleware] },
+    {
+      preHandler: [
+        authenticateWithRole({
+          roles: [UserRole.ADMIN, UserRole.MANAGER],
+        }),
+      ],
+    },
     async function (request, reply) {
       await createNewBlog(request, reply);
     }
@@ -31,7 +38,13 @@ export const blogRoutes = (fastify: FastifyInstance) => {
   // Update a blog (authenticated)
   fastify.patch(
     '/:id',
-    { preHandler: [authenticationMiddleware] },
+    {
+      preHandler: [
+        authenticateWithRole({
+          roles: [UserRole.ADMIN, UserRole.MANAGER],
+        }),
+      ],
+    },
     async function (request, reply) {
       await updateExistingBlog(request, reply);
     }
@@ -40,7 +53,13 @@ export const blogRoutes = (fastify: FastifyInstance) => {
   // Delete a blog (authenticated)
   fastify.delete(
     '/:id',
-    { preHandler: [authenticationMiddleware] },
+    {
+      preHandler: [
+        authenticateWithRole({
+          roles: [UserRole.ADMIN, UserRole.MANAGER],
+        }),
+      ],
+    },
     async function (request, reply) {
       await deleteExistingBlog(request, reply);
     }
