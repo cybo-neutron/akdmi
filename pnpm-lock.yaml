@@ -223,6 +223,9 @@ importers:
 
   libs/database:
     dependencies:
+      '@org/utils':
+        specifier: workspace:*
+        version: link:../utils
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@types/pg@8.16.0)(pg@8.17.2)
