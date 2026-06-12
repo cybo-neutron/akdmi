@@ -1,10 +1,11 @@
+import { User } from '../schema/user.schema';
 import { db } from '../db';
 import {
   Course,
   CourseInsertType,
   CourseSelectType,
 } from '../schema/course.schema';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 export async function createCourse(
   courseData: CourseInsertType
@@ -30,11 +31,24 @@ export async function updateCourse(
 
 export async function getCourseById(
   id: number
-): Promise<CourseSelectType | null> {
+): Promise<(CourseSelectType & { author?: string | null }) | null> {
   const [course] = await db
-    .select()
+    .select({
+      id: Course.id,
+      title: Course.title,
+      description: Course.description,
+      coverArt: Course.coverArt,
+      introductionVideo: Course.introductionVideo,
+      isActive: Course.isActive,
+      createdBy: Course.createdBy,
+      lastUpdatedBy: Course.lastUpdatedBy,
+      createdAt: Course.createdAt,
+      updatedAt: Course.updatedAt,
+      author: sql<string>`concat(${User.firstName}, ' ', ${User.lastName})`,
+    })
     .from(Course)
     .where(eq(Course.id, id))
+    .innerJoin(User, eq(User.id, Course.createdBy))
     .limit(1);
   return course || null;
 }

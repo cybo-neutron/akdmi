@@ -80,14 +80,14 @@ export async function getContentLogsByUserAndCourse(
 ) {
   return db
     .select({
-      log: UserContentLog,
-      content: {
-        id: Content.id,
-        title: Content.title,
-        type: Content.type,
-        sequence: Content.sequence,
-        parentId: Content.parentId,
-      },
+      ...UserContentLog,
+      // content: {
+      //   id: Content.id,
+      //   title: Content.title,
+      //   type: Content.type,
+      //   sequence: Content.sequence,
+      //   parentId: Content.parentId,
+      // },
     })
     .from(UserContentLog)
     .innerJoin(Content, eq(UserContentLog.contentId, Content.id))

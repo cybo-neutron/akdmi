@@ -5,6 +5,7 @@ import { courseRoutes } from './course.route';
 import { contentRoutes } from './content.route';
 import { courseEnrollmentRoutes } from './course_enrollment.route';
 import { blogRoutes } from './blog.route';
+import { userContentLogRoutes } from './user_content_log.route';
 
 export default async function (fastify: FastifyInstance) {
   fastify.register(userRoutes, {
@@ -29,6 +30,10 @@ export default async function (fastify: FastifyInstance) {
 
   fastify.register(blogRoutes, {
     prefix: '/v1/blogs',
+  });
+
+  fastify.register(userContentLogRoutes, {
+    prefix: '/v1/progress',
   });
 
   fastify.get('/', async function () {
