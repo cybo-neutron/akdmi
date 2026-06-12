@@ -79,3 +79,23 @@ export async function deleteContent(id: number): Promise<void> {
     })
     .where(eq(Content.id, id));
 }
+
+/**
+ * Bulk-update the sequence field for an array of content items.
+ * Runs inside a single transaction.
+ * Rules enforced by the caller:
+ *  - Pass only root-level content IDs when reordering chapters.
+ *  - Pass only child content IDs of one specific parent when reordering topics.
+ */
+export async function reorderContents(
+  items: { id: number; sequence: number }[]
+): Promise<void> {
+  await Promise.all(
+    items.map((item) =>
+      db
+        .update(Content)
+        .set({ sequence: item.sequence, updatedAt: new Date() })
+        .where(eq(Content.id, item.id))
+    )
+  );
+}

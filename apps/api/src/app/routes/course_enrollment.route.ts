@@ -4,6 +4,8 @@ import {
   unenrollUserFromCourse,
   getMyEnrollments,
   getEnrolledUsers,
+  selfEnrollInCourse,
+  checkMyEnrollment,
 } from '../controllers/course_enrollment.controller';
 import {
   authenticationMiddleware,
@@ -50,6 +52,28 @@ export const courseEnrollmentRoutes = (fastify: FastifyInstance) => {
     },
     async function (request, reply) {
       await getMyEnrollments(request, reply);
+    }
+  );
+
+  // Check if the current user is enrolled in a specific course
+  fastify.get(
+    '/check/:courseId',
+    {
+      preHandler: [authenticationMiddleware],
+    },
+    async function (request, reply) {
+      await checkMyEnrollment(request, reply);
+    }
+  );
+
+  // Self-enroll the current user in a course
+  fastify.post(
+    '/self-enroll',
+    {
+      preHandler: [authenticationMiddleware],
+    },
+    async function (request, reply) {
+      await selfEnrollInCourse(request, reply);
     }
   );
 

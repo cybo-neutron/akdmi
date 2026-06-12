@@ -9,6 +9,72 @@ import {
 import z from 'zod';
 import { logger } from '@org/utils';
 
+// Self-enroll the authenticated user in a course
+export async function selfEnrollInCourse(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  try {
+    const bodySchema = z.object({
+      courseId: z.number(),
+    });
+
+    const result = bodySchema.safeParse(request.body);
+    if (!result.success) {
+      return reply
+        .status(400)
+        .send({ message: 'Invalid data', errors: result.error.issues });
+    }
+
+    const userId = Number((request.user as any).userId);
+    const { courseId } = result.data;
+
+    // Return 409 if already enrolled (frontend treats this as success)
+    const existing = await getEnrollmentRepo(userId, courseId);
+    if (existing) {
+      return reply
+        .status(409)
+        .send({ message: 'Already enrolled in this course' });
+    }
+
+    const enrollment = await enrollUserRepo({ userId, courseId });
+    return reply.status(201).send(enrollment);
+  } catch (error: any) {
+    logger.error('Error in selfEnrollInCourse: ', error);
+    return reply.status(500).send({
+      message: error?.message || 'Internal Server Error',
+    });
+  }
+}
+
+// Check whether the authenticated user is enrolled in a given course
+export async function checkMyEnrollment(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  try {
+    const paramsSchema = z.object({
+      courseId: z.string().transform((v) => Number(v)),
+    });
+
+    const result = paramsSchema.safeParse(request.params);
+    if (!result.success) {
+      return reply.status(400).send({ message: 'Invalid course ID' });
+    }
+
+    const userId = Number((request.user as any).userId);
+    const enrollment = await getEnrollmentRepo(userId, result.data.courseId);
+    return reply
+      .status(200)
+      .send({ isEnrolled: !!enrollment, enrollment: enrollment ?? null });
+  } catch (error: any) {
+    logger.error('Error in checkMyEnrollment: ', error);
+    return reply.status(500).send({
+      message: error?.message || 'Internal Server Error',
+    });
+  }
+}
+
 // Enroll a user in a course
 export async function enrollUserInCourse(
   request: FastifyRequest,

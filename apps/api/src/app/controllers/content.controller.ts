@@ -5,6 +5,7 @@ import {
   getContentById as getContentByIdRepo,
   updateContent as updateContentRepo,
   deleteContent as deleteContentRepo,
+  reorderContents as reorderContentsRepo,
   createContentText,
   createContentMedia,
   createContentDocument,
@@ -238,6 +239,36 @@ export async function deleteContent(
     return reply.status(200).send({ message: 'Content deleted successfully' });
   } catch (error: any) {
     logger.error('Error deleting content: ', error);
+    return reply
+      .status(500)
+      .send({ message: error?.message || 'Internal Server Error' });
+  }
+}
+
+// Bulk-reorder content sequence numbers
+export async function reorderContents(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  try {
+    const schema = z.object({
+      items: z
+        .array(z.object({ id: z.number(), sequence: z.number() }))
+        .min(1),
+    });
+
+    const result = schema.safeParse(request.body);
+    if (!result.success) {
+      logger.error('Invalid reorder data: ', result.error);
+      return reply
+        .status(400)
+        .send({ message: 'Invalid data', errors: result.error.issues });
+    }
+
+    await reorderContentsRepo(result.data.items);
+    return reply.status(200).send({ message: 'Reordered successfully' });
+  } catch (error: any) {
+    logger.error('Error reordering contents: ', error);
     return reply
       .status(500)
       .send({ message: error?.message || 'Internal Server Error' });

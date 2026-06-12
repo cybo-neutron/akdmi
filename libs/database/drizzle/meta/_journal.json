@@ -50,6 +50,20 @@
       "when": 1771529050855,
       "tag": "0006_sparkling_blacklash",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1781111717513,
+      "tag": "0007_goofy_arclight",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1781114588167,
+      "tag": "0008_perfect_norrin_radd",
+      "breakpoints": true
     }
   ]
 }

@@ -18,6 +18,7 @@ const ResourceEnumType = {
   USER: 'user',
   CONTENT: 'content',
   COURSE: 'course',
+  BLOG: 'blog',
 } as const;
 
 export const PermissionEnum = pgEnum(

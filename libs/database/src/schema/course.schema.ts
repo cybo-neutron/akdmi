@@ -14,6 +14,8 @@ export const Course = pgTable('course', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description').notNull(),
+  coverArt: text('cover_art'),
+  introductionVideo: text('introduction_video'),
   isActive: boolean('is_active').default(true).notNull(),
   createdBy: bigserial('created_by', { mode: 'number' })
     .notNull()

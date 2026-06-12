@@ -5,6 +5,7 @@ import {
   getContentById,
   updateContent,
   deleteContent,
+  reorderContents,
   saveContentText,
   saveContentMedia,
   saveContentDocument,
@@ -68,6 +69,17 @@ export const contentRoutes = (fastify: FastifyInstance) => {
     },
     async function (request, reply) {
       await deleteContent(request, reply);
+    }
+  );
+
+  // Bulk-reorder content sequences (chapters or topics)
+  fastify.patch(
+    '/reorder',
+    {
+      preHandler: [authenticateWithRole({roles : [UserRole.ADMIN,UserRole.MANAGER,UserRole.MENTOR]})],
+    },
+    async function (request, reply) {
+      await reorderContents(request, reply);
     }
   );
 
