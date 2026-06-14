@@ -29,7 +29,16 @@ export const courseRoutes = (fastify: FastifyInstance) => {
   fastify.get(
     '/',
     {
-      preHandler: [],
+      preHandler: [
+        authenticateWithRole({
+          roles: [
+            UserRole.ADMIN,
+            UserRole.MANAGER,
+            UserRole.MENTOR,
+            UserRole.STUDENT,
+          ],
+        }),
+      ],
     },
     async function (request, reply) {
       await getAllCourses(request, reply);

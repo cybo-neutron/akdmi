@@ -79,11 +79,13 @@ export function authenticateWithRole({ roles }: { roles: UserRoleType[] }) {
       }
 
       const user = await getUserById({ id: decodedToken.userId });
+      logger.info("middleware user : ", user);
 
-      if (!user) {
+
+      if (!user || !roles.includes(user?.role as UserRoleType)) {
         return reply
           .status(401)
-          .send({ message: 'Unauthorized: User not found' });
+          .send({ message: 'Unauthorized: User not found or role not authorized' });
       }
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -95,7 +97,10 @@ export function authenticateWithRole({ roles }: { roles: UserRoleType[] }) {
       //     .send({ message: 'Unauthorized: User not found' });
       // }
 
-      request.user = decodedToken;
+      request.user = {
+        ...decodedToken,
+        role : user.role
+      };
     } catch (error: any) {
       logger.error('Error in authenticationMiddleware:', error);
       return reply.status(500).send({ message: 'Internal Server Error' });

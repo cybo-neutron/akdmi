@@ -50,6 +50,7 @@ export async function getAllCourses(
   try {
     const user = request?.user;
     let conditions: Partial<CourseSelectType> = {}
+    logger.info("user",user)
     if (user) {
       if ([UserRoleEnum.ADMIN, UserRoleEnum.MANAGER, UserRoleEnum.MENTOR].includes(user.role)) {
         conditions = {
