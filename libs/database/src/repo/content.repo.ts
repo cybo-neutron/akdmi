@@ -1,10 +1,12 @@
+import { User } from '../schema/user.schema';
 import { db } from '../db';
 import {
   Content,
   ContentInsertType,
   ContentSelectType,
 } from '../schema/content.schema';
-import { and, eq, asc } from 'drizzle-orm';
+import { and, eq, asc, SQL, sql } from 'drizzle-orm';
+import { Course } from '../schema/course.schema';
 
 // --- Content Base Functions ---
 
@@ -58,6 +60,45 @@ export async function getContentsByCourse(
     .from(Content)
     .where(and(eq(Content.courseId, courseId), eq(Content.isActive, true)))
     .orderBy(asc(Content.sequence));
+}
+
+export async function getContentsOfCourse({
+  courseId,
+  includeAuthor = true,
+}: {
+  courseId: number;
+  includeAuthor?: boolean;
+}) {
+
+  const whereCondition: SQL[] = [];
+  whereCondition.push(eq(Content.courseId, courseId))
+  let query = db
+    .select({
+      id: Content.id,
+      title: Content.title,
+      description: Content.description,
+      type: Content.type,
+      courseId: Content.courseId,
+      parentId: Content.parentId,
+      sequence: Content.sequence,
+      createdAt: Content.createdAt,
+      updatedAt: Content.updatedAt,
+      createdBy: Content.createdBy,
+      lastUpdatedBy: Content.lastUpdatedBy,
+      isActive: Content.isActive,
+      courseTitle: Course.title,
+      courseDescription: Course.description,
+      ...(includeAuthor ? { author: sql`COALESCE(${User.firstName}, ${User.lastName})` } : {}),
+    })
+    .from(Content)
+    .innerJoin(Course, eq(Course.id, Content.courseId))
+    .$dynamic();
+
+  if (includeAuthor) {
+    query = query.innerJoin(User, eq(User.id, Content.createdBy));
+  }
+
+  return query.where(and(...whereCondition)).orderBy(asc(Content.sequence));
 }
 
 export async function deleteContent(id: number): Promise<void> {

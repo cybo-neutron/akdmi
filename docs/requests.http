@@ -15,3 +15,9 @@ Content-Type: application/json
     "email": "john.wick_07@example.com",
     "password": "password123"
 }
+
+###
+
+GET http://localhost:4500/v1/courses/public HTTP/1.1
+
+

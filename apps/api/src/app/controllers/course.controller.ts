@@ -5,9 +5,11 @@ import {
   updateCourse as updateCourseRepo,
   deleteCourse as deleteCourseRepo,
   getCourseById as getCourseByIdRepo,
+  getCoursesWithAuthor as getCoursesWithAuthorRepo
 } from '@org/database/repo';
 import z from 'zod';
 import { logger } from '@org/utils';
+import { CoursePublishStatusEnum, CourseSelectType, UserRoleEnum } from '@org/database/schema';
 
 export async function createNewCourse(
   request: FastifyRequest,
@@ -22,7 +24,7 @@ export async function createNewCourse(
     const validateResult = validateData.safeParse(request.body);
 
     if (!validateResult.success) {
-      return reply.status(400).send({ message: 'Invalid data' });
+      return reply.status(400).send({});
     }
 
     const { title, description } = validateResult.data;
@@ -46,13 +48,78 @@ export async function getAllCourses(
   reply: FastifyReply
 ) {
   try {
-    const courses = await getAllCoursesRepo();
+    const user = request?.user;
+    let conditions: Partial<CourseSelectType> = {}
+    if (user) {
+      if ([UserRoleEnum.ADMIN, UserRoleEnum.MANAGER, UserRoleEnum.MENTOR].includes(user.role)) {
+        conditions = {
+          isActive: true,
+        }
+      } else {
+        conditions = {
+          status: CoursePublishStatusEnum.PUBLISHED,
+          isActive: true,
+        }
+      }
+
+    } else {
+      // public route
+      conditions = {
+        status: CoursePublishStatusEnum.PUBLISHED,
+        isActive: true,
+      }
+
+    }
+
+    const courses = await getAllCoursesRepo(conditions);
     return reply.status(200).send(courses);
   } catch (error: any) {
     reply
       .status(500)
       .send({ message: error?.message || 'Internal Server Error' });
   }
+}
+
+export async function getCoursesAndAuthor(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  try {
+
+    const user = request?.user;
+    let courseConditions: Partial<CourseSelectType> = {}
+    if (user) {
+      if ([UserRoleEnum.ADMIN, UserRoleEnum.MANAGER, UserRoleEnum.MENTOR].includes(user.role)) {
+        courseConditions = {
+          isActive: true,
+        }
+      } else {
+        courseConditions = {
+          status: CoursePublishStatusEnum.PUBLISHED,
+          isActive: true,
+        }
+      }
+
+    } else {
+      // public route
+      courseConditions = {
+        status: CoursePublishStatusEnum.PUBLISHED,
+        isActive: true,
+      }
+
+    }
+
+    const courses = await getCoursesWithAuthorRepo({
+      courseConditions
+    })
+    return reply.status(200).send(courses);
+
+  } catch (error: any) {
+    reply
+      .status(500)
+      .send({ message: error?.message || 'Internal Server Error' });
+  }
+
 }
 
 export async function getCourseById(

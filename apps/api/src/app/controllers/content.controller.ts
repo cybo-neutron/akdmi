@@ -15,6 +15,7 @@ import {
   updateContentTextByContentId,
   updateContentMediaByContentId,
   updateContentDocumentByContentId,
+  getContentsOfCourse,
 } from '@org/database/repo';
 import z from 'zod';
 import { v4 as uuidv4 } from 'uuid';
@@ -104,6 +105,37 @@ export async function getContentsByCourse(
     );
 
     return reply.status(200).send(contentsWithTypeData);
+  } catch (error: any) {
+    logger.error('Error fetching contents: ', error);
+    return reply
+      .status(500)
+      .send({ message: error?.message || 'Internal Server Error' });
+  }
+}
+
+export async function getContentsOfCoursePublic(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  try {
+    const validateData = z.object({
+      courseId: z.string().transform((v) => Number(v)),
+    });
+
+    const validateResult = validateData.safeParse(request.params);
+
+    if (!validateResult.success) {
+      logger.error('Invalid courseId: ', validateResult.error);
+      return reply.status(400).send({ message: 'Invalid course ID' });
+    }
+
+    const { courseId } = validateResult.data;
+    const contents = await getContentsOfCourse({
+      courseId,
+      includeAuthor: true,
+    });
+
+    return reply.status(200).send(contents);
   } catch (error: any) {
     logger.error('Error fetching contents: ', error);
     return reply

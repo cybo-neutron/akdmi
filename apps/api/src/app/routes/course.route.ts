@@ -2,6 +2,7 @@ import fastify, { FastifyInstance } from 'fastify';
 import {
   createNewCourse,
   getCourseById,
+  getCoursesAndAuthor,
 } from '../controllers/course.controller';
 import { getAllCourses } from '../controllers/course.controller';
 import { updateCourse } from '../controllers/course.controller';
@@ -73,4 +74,12 @@ export const courseRoutes = (fastify: FastifyInstance) => {
       await deleteCourse(request, reply);
     }
   );
+
+
+  fastify.get(
+    '/public',
+    async function (request, reply) {
+      await getCoursesAndAuthor(request, reply);
+    }
+  )
 };

@@ -1,11 +1,11 @@
-import { User } from '../schema/user.schema';
+import { User, UserSchema } from '../schema/user.schema';
 import { db } from '../db';
 import {
   Course,
   CourseInsertType,
   CourseSelectType,
 } from '../schema/course.schema';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, SQL, sql } from 'drizzle-orm';
 
 export async function createCourse(
   courseData: CourseInsertType
@@ -40,6 +40,7 @@ export async function getCourseById(
       coverArt: Course.coverArt,
       introductionVideo: Course.introductionVideo,
       isActive: Course.isActive,
+      status: Course.status,
       createdBy: Course.createdBy,
       lastUpdatedBy: Course.lastUpdatedBy,
       createdAt: Course.createdAt,
@@ -62,8 +63,59 @@ export async function getCoursesByUser(
     .where(and(eq(Course.createdBy, userId), eq(Course.isActive, true)));
 }
 
-export async function getAllCourses(): Promise<CourseSelectType[]> {
-  return db.select().from(Course).where(eq(Course.isActive, true));
+export async function getAllCourses(conditions: Partial<CourseSelectType>): Promise<CourseSelectType[]> {
+
+  const whereCondition: SQL[] = []
+
+  for (const [key, value] of Object.entries(conditions) as [keyof CourseSelectType, any][]) {
+    if (value !== undefined) {
+      whereCondition.push(eq(Course[key], value));
+    }
+  }
+
+  return db.select().from(Course).where(
+    and(
+      ...whereCondition
+    )
+  );
+}
+
+export async function getCoursesWithAuthor({ courseConditions, authorConditions }: { courseConditions: Partial<CourseSelectType>, authorConditions?: Partial<UserSchema> }) {
+  const whereCondition: SQL[] = []
+
+  for (const [key, value] of Object.entries(courseConditions) as [keyof CourseSelectType, any][]) {
+    if (value !== undefined) {
+      whereCondition.push(eq(Course[key], value));
+    }
+  }
+  if (authorConditions) {
+    for (const [key, value] of Object.entries(authorConditions) as [keyof UserSchema, any][]) {
+      if (value !== undefined) {
+        whereCondition.push(eq(User[key], value));
+      }
+    }
+  }
+
+  return db
+    .select({
+      id: Course.id,
+      title: Course.title,
+      description: Course.description,
+      coverArt: Course.coverArt,
+      introductionVideo: Course.introductionVideo,
+      isActive: Course.isActive,
+      status: Course.status,
+      createdBy: Course.createdBy,
+      lastUpdatedBy: Course.lastUpdatedBy,
+      createdAt: Course.createdAt,
+      updatedAt: Course.updatedAt,
+      author: sql<string>`concat(${User.firstName}, ' ', ${User.lastName})`,
+    })
+    .from(Course)
+    .innerJoin(User, eq(User.id, Course.createdBy))
+    .where(and(
+      ...whereCondition
+    ));
 }
 
 export async function deleteCourse(id: number): Promise<void> {

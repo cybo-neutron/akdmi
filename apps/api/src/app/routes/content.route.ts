@@ -10,6 +10,7 @@ import {
   saveContentMedia,
   saveContentDocument,
   getContentMediaPresignedUrlForUpload,
+  getContentsOfCoursePublic,
 } from '../controllers/content.controller';
 import { authenticateWithRole, authenticationMiddleware } from '../middleware/authentication.middleware';
 import { UserRole } from '../constant/UserRoles';
@@ -21,7 +22,7 @@ export const contentRoutes = (fastify: FastifyInstance) => {
   fastify.post(
     '/create',
     {
-      preHandler: [authenticateWithRole({roles : [UserRole.ADMIN,UserRole.MANAGER,UserRole.MENTOR]})],
+      preHandler: [authenticateWithRole({ roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.MENTOR] })],
     },
     async function (request, reply) {
       await createContent(request, reply);
@@ -54,7 +55,7 @@ export const contentRoutes = (fastify: FastifyInstance) => {
   fastify.patch(
     '/update',
     {
-      preHandler: [authenticateWithRole({roles : [UserRole.ADMIN,UserRole.MANAGER,UserRole.MENTOR]})],
+      preHandler: [authenticateWithRole({ roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.MENTOR] })],
     },
     async function (request, reply) {
       await updateContent(request, reply);
@@ -65,7 +66,7 @@ export const contentRoutes = (fastify: FastifyInstance) => {
   fastify.delete(
     '/:id',
     {
-      preHandler: [authenticateWithRole({roles : [UserRole.ADMIN,UserRole.MANAGER,UserRole.MENTOR]})],
+      preHandler: [authenticateWithRole({ roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.MENTOR] })],
     },
     async function (request, reply) {
       await deleteContent(request, reply);
@@ -76,7 +77,7 @@ export const contentRoutes = (fastify: FastifyInstance) => {
   fastify.patch(
     '/reorder',
     {
-      preHandler: [authenticateWithRole({roles : [UserRole.ADMIN,UserRole.MANAGER,UserRole.MENTOR]})],
+      preHandler: [authenticateWithRole({ roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.MENTOR] })],
     },
     async function (request, reply) {
       await reorderContents(request, reply);
@@ -89,7 +90,7 @@ export const contentRoutes = (fastify: FastifyInstance) => {
   fastify.post(
     '/text/save',
     {
-      preHandler: [authenticateWithRole({roles : [UserRole.ADMIN,UserRole.MANAGER,UserRole.MENTOR]})],
+      preHandler: [authenticateWithRole({ roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.MENTOR] })],
     },
     async function (request, reply) {
       await saveContentText(request, reply);
@@ -100,7 +101,7 @@ export const contentRoutes = (fastify: FastifyInstance) => {
   fastify.post(
     '/media/save',
     {
-      preHandler: [authenticateWithRole({roles : [UserRole.ADMIN,UserRole.MANAGER,UserRole.MENTOR]})],
+      preHandler: [authenticateWithRole({ roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.MENTOR] })],
     },
     async function (request, reply) {
       await saveContentMedia(request, reply);
@@ -119,10 +120,17 @@ export const contentRoutes = (fastify: FastifyInstance) => {
   fastify.post(
     '/document/save',
     {
-      preHandler: [authenticateWithRole({roles : [UserRole.ADMIN,UserRole.MANAGER,UserRole.MENTOR]})],
+      preHandler: [authenticateWithRole({ roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.MENTOR] })],
     },
     async function (request, reply) {
       await saveContentDocument(request, reply);
     }
   );
+
+  fastify.get(
+    '/public/:courseId',
+    async function (request, reply) {
+      await getContentsOfCoursePublic(request, reply);
+    }
+  )
 };
