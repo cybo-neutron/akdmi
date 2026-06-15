@@ -29,7 +29,7 @@ export const ContentType = pgEnum(
 export const Content = pgTable('content', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
-  description: text('description').notNull(),
+  description: text('description'),
   type: ContentType('type').notNull(),
   isActive: boolean('is_active').default(true).notNull(),
   sequence: integer('sequence').default(1).notNull(),
