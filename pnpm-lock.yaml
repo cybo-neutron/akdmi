@@ -257,6 +257,9 @@ importers:
       '@aws-sdk/client-sqs':
         specifier: ^3.990.0
         version: 3.990.0
+      '@org/utils':
+        specifier: workspace:*
+        version: link:../utils
       tslib:
         specifier: ^2.3.0
         version: 2.8.1

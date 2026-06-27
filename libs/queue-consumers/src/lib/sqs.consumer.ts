@@ -8,7 +8,7 @@ import { SQSConsumerConfig } from './consumer_config.interface';
 import { Consumer, EventHandler } from './consumer.interface';
 import { logger } from '@org/utils';
 
-const { AWS_REGION, AWS_LOCALSTACK } = process.env;
+const { AWS_REGION, AWS_LOCALSTACK, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
 
 const isLocalStack = AWS_LOCALSTACK === 'true';
 
@@ -24,7 +24,7 @@ export class SQSConsumer implements Consumer {
     this.config = config;
     this.sqsClient = new SQSClient({
       region: AWS_REGION,
-      credentials: { accessKeyId: '', secretAccessKey: '' },
+      credentials: { accessKeyId: AWS_ACCESS_KEY_ID as string, secretAccessKey: AWS_SECRET_ACCESS_KEY as string },
       endpoint: isLocalStack ? 'http://localhost:4566' : undefined,
     });
     this.eventHandler = eventHandler;
