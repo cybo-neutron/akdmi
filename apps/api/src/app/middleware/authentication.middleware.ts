@@ -32,17 +32,6 @@ export async function authenticationMiddleware(
         .send({ message: 'Unauthorized: Malformed token payload' });
     }
 
-    // const user = await getUserById({ id: decodedToken.userId });
-
-    // if (!user) {
-    //   return reply
-    //     .status(401)
-    //     .send({ message: 'Unauthorized: User not found' });
-    // }
-
-    // // remove password
-    // // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    // const { password: _, ...userResponse } = user;
 
     request.user = decodedToken;
   } catch (error: any) {
@@ -78,28 +67,15 @@ export function authenticateWithRole({ roles }: { roles: UserRoleType[] }) {
           .send({ message: 'Unauthorized: Malformed token payload' });
       }
 
-      const user = await getUserById({ id: decodedToken.userId });
-      logger.info("middleware user : ", user);
 
-
-      if (!user || !roles.includes(user?.role as UserRoleType)) {
+      if (!roles.includes(decodedToken.role as UserRoleType)) {
         return reply
           .status(401)
           .send({ message: 'Unauthorized: User not found or role not authorized' });
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      // const { password: _, ...userResponse } = user;
-
-      // if (!user.role || !roles.includes(user.role)) {
-      //   return reply
-      //     .status(401)
-      //     .send({ message: 'Unauthorized: User not found' });
-      // }
-
       request.user = {
         ...decodedToken,
-        role : user.role
       };
     } catch (error: any) {
       logger.error('Error in authenticationMiddleware:', error);

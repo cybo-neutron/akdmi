@@ -6,6 +6,7 @@ import {
   updateExistingUser,
   deleteExistingUser,
 } from '../controllers/user.controller';
+import { authenticationMiddleware } from '../middleware/authentication.middleware';
 
 export const userRoutes = (fastify: FastifyInstance, done: any) => {
   fastify.post('/create', async function (request, reply) {
@@ -20,7 +21,7 @@ export const userRoutes = (fastify: FastifyInstance, done: any) => {
     await getAllUsers(request, reply);
   });
 
-  fastify.patch('/:id', async function (request, reply) {
+  fastify.patch('/:id', { preHandler: [authenticationMiddleware] }, async function (request, reply) {
     await updateExistingUser(request, reply);
   });
 

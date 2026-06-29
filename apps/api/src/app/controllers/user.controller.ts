@@ -20,10 +20,10 @@ export async function createNewUser(
     const userSchema = z.object({
       firstName: z.string().max(255).optional(),
       lastName: z.string().max(255).optional(),
-      email: z.email(),
+      email: z.string().email(),
       password: z.string().min(8).max(255),
       role: z.enum(Object.values(UserRole)).optional(),
-      avatarUrl: z.url().optional(),
+      avatarUrl: z.string().url().optional(),
     });
 
     const result = userSchema.safeParse(request.body);

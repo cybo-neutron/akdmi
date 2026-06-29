@@ -49,6 +49,7 @@ export async function registerNewUser(
 
     const tokenPayload = {
       userId: newUser.id,
+      role: newUser.role
     };
 
     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as string, {
@@ -97,6 +98,7 @@ export async function loginUser(request: FastifyRequest, reply: FastifyReply) {
 
     const tokenPayload = {
       userId: user.id,
+      role: user.role
     };
 
     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as string, {
@@ -143,11 +145,11 @@ export async function verifyAccessToken(
 
     reply.status(200).send({
       userId,
-      firstName : user.firstName,
-      lastName : user.lastName,
+      firstName: user.firstName,
+      lastName: user.lastName,
       role: user.role,
       email: user.email,
-      avatarUrl : user.avatarUrl
+      avatarUrl: user.avatarUrl
     });
   } catch (error: any) {
     logger.error('Error in verifyAccessToken: ', error);
