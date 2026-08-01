@@ -161,6 +161,7 @@ export async function updateCourse(
       description: z.string().optional(),
       coverArt: z.string().optional(),
       introductionVideo: z.string().optional(),
+      status: z.nativeEnum(CoursePublishStatusEnum).optional(),
     });
 
     const validateResult = validateData.safeParse(request.body);
@@ -170,12 +171,13 @@ export async function updateCourse(
       return reply.status(400).send({ message: 'Invalid data' });
     }
 
-    const { id, title, description, coverArt, introductionVideo } = validateResult.data;
+    const { id, title, description, coverArt, introductionVideo, status } = validateResult.data;
     const course = await updateCourseRepo(id, {
       ...(title && { title }),
       ...(description && { description }),
       ...(coverArt && { coverArt }),
       ...(introductionVideo && { introductionVideo }),
+      ...(status && { status }),
     });
     return reply.status(200).send(course);
   } catch (error: any) {
