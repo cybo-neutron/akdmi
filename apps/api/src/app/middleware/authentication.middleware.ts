@@ -2,7 +2,6 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import jwt from 'jsonwebtoken';
 import { logger } from '@org/utils';
 import { UserRoleType } from '../constant/UserRoles';
-import { getUserById } from '@org/database';
 
 export async function authenticationMiddleware(
   request: FastifyRequest,

@@ -3,8 +3,6 @@ import { timestamps } from '../lib/timestamps';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import z from 'zod';
 import { UserRole } from './user.schema';
-import { text } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
 import { jsonb } from 'drizzle-orm/pg-core';
 
 const PermissionEnumType = {

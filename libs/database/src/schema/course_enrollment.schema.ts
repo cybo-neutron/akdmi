@@ -23,6 +23,4 @@ export const CourseEnrollmentInsertSchema =
   createInsertSchema(CourseEnrollment);
 
 export type CourseEnrollmentSelectType = z.infer<typeof CourseEnrollmentSchema>;
-export type CourseEnrollmentInsertType = z.infer<
-  typeof CourseEnrollmentInsertSchema
->;
+export type CourseEnrollmentInsertType = z.infer<typeof CourseEnrollmentInsertSchema>;
